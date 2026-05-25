@@ -2,6 +2,7 @@
 // ASDF 2027 'Taipan' language - (c) 2026 Riley Lorenz  & ASDF Robotics
 // -----------------------------------------------------------------------------
 
+#include <stdatomic.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -48,6 +49,15 @@ static Value clock_native(int argc, Value* argv) { // TODO: challenges 2-4 in "c
         verify_native_arguments(argc, 0, "clock");
 
         return NUMBER_VAL((double)millis() / TP_CLOCKS_PER_SEC);
+}
+
+static Value delay_native(int argc, Value* argv) {
+        verify_native_arguments(argc, 1, "delay");
+
+        if (IS_NUMBER(*argv))
+                delay(AS_NUMBER(*argv));
+
+        return NIL_VAL;
 }
 
 static Value button_down_native(int argc, Value* argv) {
@@ -135,6 +145,7 @@ void init_VM() {
         init_table(&vm.strings);
 
         define_native("clock", clock_native);
+        define_native("delay", delay_native);
         define_native("is_button_down", button_down_native);
         define_native("get_stick_position", stick_position_native);
 }
@@ -253,9 +264,14 @@ static void concatenate() {
         push(OBJ_VAL(result));
 }
 
-static InterpretResult run() {
+static InterpretResult run(void* abort_flag, void* main_handle, void* vm_clean) {
         CallFrame* frame = &vm.frames[vm.frame_count - 1];
         register uint8_t* ip = frame->ip;
+
+        // interrupt tracking
+        int cycle = 0;
+        volatile atomic_bool* abort_flag_set = (atomic_bool*)abort_flag;
+        volatile atomic_bool* vm_cleanup_done = (atomic_bool*)vm_clean;
 
 #define READ_BYTE() (*ip++)
 #define READ_3_BYTES() (ip += 3, \
@@ -448,6 +464,7 @@ static InterpretResult run() {
                                 break;
                         }
                         case OP_PRINT_SC: {
+                                screen_erase();
                                 screen_print_value(pop());
                                 break;
                         }
@@ -543,6 +560,13 @@ static InterpretResult run() {
                                 break;
                         }
                 }
+
+                if ((++cycle & 10) == 0 && *abort_flag_set) {
+                        printf("🐍 VM: Interrupt recieved. Aborting...\n");
+                        *vm_cleanup_done = true;
+                        task_notify((task_t*)main_handle);
+                        return INTERPRET_ABORTED;
+                }
         }
 
 #undef READ_BYTE
@@ -554,7 +578,7 @@ static InterpretResult run() {
 #undef BINARY_OP
 }
 
-InterpretResult interpret(ObjFunction* function) {
+InterpretResult interpret(ObjFunction* function, void* abort_flag, void* main_handle, void* vm_clean) { // just pipe through the struct
         if (function == NULL) return INTERPRET_COMPILE_ERROR;
 
         push(OBJ_VAL(function));
@@ -563,5 +587,5 @@ InterpretResult interpret(ObjFunction* function) {
         pop();
         push(OBJ_VAL(closure));
         call(closure, 0);
-        return run();
+        return run(abort_flag, main_handle, vm_clean);
 }

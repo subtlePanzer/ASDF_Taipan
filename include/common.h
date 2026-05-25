@@ -24,4 +24,14 @@
 #define UINT8_COUNT (UINT8_MAX + 1)
 #define UINT24_COUNT (UINT24_MAX + 1)
 
+#ifdef __cplusplus
+#include <atomic>
+typedef std::atomic_bool lang_agn_atomic_bool;
+typedef std::atomic_int lang_agn_atomic_int;
+#else
+#include <stdatomic.h>
+typedef atomic_bool lang_agn_atomic_bool;
+typedef atomic_int lang_agn_atomic_int;
+#endif
+
 #endif // tp_common_h

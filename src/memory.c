@@ -368,7 +368,7 @@ void mark_obj(Obj* obj) {
         if (vm.grey_capacity < vm.grey_count + 1) {
                 size_t old_cap = vm.grey_capacity;
                 vm.grey_capacity = GROW_CAPACITY(vm.grey_capacity);
-                vm.grey_stack = (Obj**)taipan_realloc(vm.grey_stack, sizeof(Obj*) * old_cap, sizeof(Obj*) * vm.grey_capacity);
+                vm.grey_stack = (Obj**)reallocate(vm.grey_stack, sizeof(Obj*) * old_cap, sizeof(Obj*) * vm.grey_capacity);
         }
 
         vm.grey_stack[vm.grey_count++] = obj;
@@ -490,7 +490,7 @@ void free_objects() {
                 object = next;
         }
 
-        taipan_realloc(vm.grey_stack, 0, 0);
+        reallocate(vm.grey_stack, 0, 0);
 }
 
 #undef HDR_SET_SIZE

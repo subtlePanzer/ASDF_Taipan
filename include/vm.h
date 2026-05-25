@@ -41,14 +41,15 @@ typedef struct {
 typedef enum {
         INTERPRET_OK,
         INTERPRET_COMPILE_ERROR,
-        INTERPRET_RUNTIME_ERROR
+        INTERPRET_RUNTIME_ERROR,
+        INTERPRET_ABORTED
 } InterpretResult;
 
 extern VM vm;
 
 void init_VM();
 void free_VM();
-InterpretResult interpret(ObjFunction* function);
+InterpretResult interpret(ObjFunction* function, void* abort_flag, void* main_handle, void* vm_cleanup);
 void push(Value value);
 Value pop();
 

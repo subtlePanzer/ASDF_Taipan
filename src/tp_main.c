@@ -63,26 +63,38 @@ ObjFunction* read_tp_file(const char* path) {
         return func;
 }
 
-void run_script(ObjFunction* function) {
-        InterpretResult result = interpret(function);
+void run_script(void* params) {
+        run_script_params* args = (run_script_params*)params;
+        ObjFunction* function = args->func;
+        void* abort_flag = args->interrupt;
+        void* main_handle = args->main_handle;
+        void* vm_cleanup = args->vm_cleanup_atomic;
+
+        InterpretResult result = interpret(function, abort_flag, main_handle, vm_cleanup);
 
         if (result == INTERPRET_COMPILE_ERROR) exit(65);
         if (result == INTERPRET_RUNTIME_ERROR) exit(70);
+
+        return;
 }
 
-int init_tp() {
+ObjFunction* init_tp() {
         printf("🐍 Initing Taipan...\n");
 
+        printf("🐍 Initing VM... ");
+        init_VM();
+        printf("inited.\n");
+
+
 #ifdef USE_CUSTOM_MEMORY
+        printf("🐍 Inited memory manager... ");
         init_mem_manager();
-        printf("🐍 Inited memory manager...\n");
+        printf("inited.\n");
 #endif
 
-        init_VM();
-        printf("🐍 Inited VM...\n");
-
+        printf("🐍 Inited Bootloader... ");
         init_bootloader();
-        printf("🐍 Inited Bootloader...\n");
+        printf("inited.\n");
 
         const char* path;
         auton_file_type result = auton_file_path(&path);
@@ -90,28 +102,20 @@ int init_tp() {
         switch (result) {
                 case AFT_NONE:
                         printf("🐍 No auton script found.\n");
-                        printf("🐍 Aborting...\n");
-                        return -1;
+                        printf("🐍 Skipping auton...\n"); // could fallback to builtin default
+                        return NULL;
 
                 case AFT_ASDF:
-                        printf("🐍 Compiling 'auton.asdf'...");
+                        printf("🐍 Compiling 'auton.asdf'... ");
                         ObjFunction* compiled = compile_file(path);
                         printf("compiled.\n");
-                        printf("🐍 Running 'auton.asdf'...\n");
-                        run_script(compiled);
-                        printf("🐍 Finished.\n");
-                        break;
+                        return compiled;
 
                 case AFT_TP:
-                        printf("🐍 Running 'out.tp'...\n");
-                        run_script(read_tp_file(path));
-                        printf("🐍 Finished.\n");
-                        break;
+                        return read_tp_file(path);
 
                 default:
-                        return -1; // Unreachable
+                        return NULL;
         }
-
-        free_VM();
-        return 0;
+        return NULL; // Unreachable
 }
