@@ -10,24 +10,24 @@
 #include "api.h"
 #include "common.h"
 
-static lang_agn_atomic_bool button_a_state;
-static lang_agn_atomic_bool button_b_state;
-static lang_agn_atomic_bool button_x_state;
-static lang_agn_atomic_bool button_y_state;
-static lang_agn_atomic_bool button_up_state;
-static lang_agn_atomic_bool button_down_state;
-static lang_agn_atomic_bool button_left_state;
-static lang_agn_atomic_bool button_right_state;
+extern lang_agn_atomic_bool button_a_state;
+extern lang_agn_atomic_bool button_b_state;
+extern lang_agn_atomic_bool button_x_state;
+extern lang_agn_atomic_bool button_y_state;
+extern lang_agn_atomic_bool button_up_state;
+extern lang_agn_atomic_bool button_down_state;
+extern lang_agn_atomic_bool button_left_state;
+extern lang_agn_atomic_bool button_right_state;
 
-static lang_agn_atomic_bool bumper_l1_state;
-static lang_agn_atomic_bool bumper_l2_state;
-static lang_agn_atomic_bool bumper_r1_state;
-static lang_agn_atomic_bool bumper_r2_state;
+extern lang_agn_atomic_bool bumper_l1_state;
+extern lang_agn_atomic_bool bumper_l2_state;
+extern lang_agn_atomic_bool bumper_r1_state;
+extern lang_agn_atomic_bool bumper_r2_state;
 
-static lang_agn_atomic_int axis_left_x;
-static lang_agn_atomic_int axis_left_y;
-static lang_agn_atomic_int axis_right_x;
-static lang_agn_atomic_int axis_right_y;
+extern lang_agn_atomic_int axis_left_x;
+extern lang_agn_atomic_int axis_left_y;
+extern lang_agn_atomic_int axis_right_x;
+extern lang_agn_atomic_int axis_right_y;
 
 typedef enum {
         motor_left_front = -13,
@@ -62,8 +62,8 @@ typedef struct hardware
 static hardware robot_hardware;
 
 void init_hardware();
-motor_group_wrapper new_motor_group_wrapper(int8_t m1, int8_t m2, int8_t m3);
-void set_motor_group_wrapper(motor_group_wrapper group, int speed);
+motor_group_wrapper new_motor_group_wrapper(motor_group_wrapper* m, int8_t m1, int8_t m2, int8_t m3);
+void set_motor_group_wrapper(motor_group_wrapper* group, int speed);
 
 
 #endif

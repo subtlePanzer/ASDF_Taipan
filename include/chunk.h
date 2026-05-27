@@ -53,8 +53,11 @@ typedef enum { // Vector OPs?
         OP_CALL_LONG,
         OP_CLOSURE,
         OP_CLOSE_UPVALUE,
+        rOP_MOTOR_SPIN, // rOP = robot OP
+        rOP_MOTOR_GROUP_SPIN,
+        rOP_DT_SPIN,
         OP_RETURN,
-} opcode;
+} opcode; // TODO: OP_HLT -> halt until a 'hardware interrupt' ie. thread says so
 
 typedef struct {
         int count;

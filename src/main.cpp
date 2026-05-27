@@ -7,6 +7,7 @@
 extern "C" {
 #include "api.h"
 #include "driver.h"
+#include "hardware.h"
 #include "object.h"
 #include "tp_main.h"
 #include "vm.h"
@@ -18,6 +19,10 @@ void initialize() {
         printf("============================INIT============================\n");
         printf("🕰️  Initialisation period start...\n");
 
+        // robot
+        init_hardware();
+
+        // Taipan
         std::atomic_init(&abort_auton, false);
         std::atomic_init(&vm_cleanup_done, false);
 
@@ -33,9 +38,6 @@ void initialize() {
 
         printf("🕰️  Finished init.\n");
         printf("------------------------------------------------------------\n\n");
-
-        // temp
-        autonomous();
 }
 
 void disabled() {}
@@ -73,6 +75,7 @@ void delay_thrd(void* main_task_handle) {
 void autonomous() {
         printf("=========================AUTONOMOUS=========================\n");
         printf("🕰️  Autonomous period start:\n");
+        pros::screen::print(pros::E_TEXT_MEDIUM, 0, "AUTON");
 
         if (params->func != NULL) {
                 printf("🐍 Running... \n");
@@ -117,7 +120,9 @@ void opcontrol() {
         pros::Task driverReadInputHandler(driver_read_input, "DRIVER INPUT READ");
         pros::Task driverApplyInputHandler(driver_apply_input, "DRIVER INPUT APPLY");
 
-        pros::c::task_notify_take(true, TIMEOUT_MAX);
+        while (true) {
+                pros::delay(100);
+        }
 
         printf("🕰️  Finished driver control period.\n");
         printf("------------------------------------------------------------\n\n");

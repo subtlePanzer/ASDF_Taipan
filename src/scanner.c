@@ -146,9 +146,15 @@ static TokenType identifier_type() {
                 case 's':
                         if (scanner.curr - scanner.start > 1) {
                                 switch (scanner.start[1]) {
+                                        case 'e':
+                                                if (is_keyword(2, 4, "t_dt")) return TOKEN_SET_DT;
+                                                if (is_keyword(2, 4, "t_mg")) return TOKEN_SET_MOTORGROUP; // make native function
+                                                if (is_keyword(2, 7, "t_motor")) return TOKEN_SET_MOTOR;
+                                                break;
                                         case 'u': return check_keyword(2, 3, "per", TOKEN_SUPER);
                                         case 'w': return check_keyword(2, 4, "itch", TOKEN_SWITCH);
                                 }
+                                break;
                         }
                 case 't':
                         if (scanner.curr - scanner.start > 1) {

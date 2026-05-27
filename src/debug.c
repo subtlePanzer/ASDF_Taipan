@@ -259,6 +259,12 @@ int disassemble_instruction(Chunk* chunk, int offset) {
                 }
                 case OP_CLOSE_UPVALUE:
                         return simple_instruction("OP_CLOSE_UPVALUE", offset);
+                case rOP_DT_SPIN:
+                        return simple_instruction("rOP_DT_SPIN", offset);
+                case rOP_MOTOR_SPIN:
+                        return simple_instruction("rOP_MOTOR_SPIN", offset);
+                case rOP_MOTOR_GROUP_SPIN:
+                        return simple_instruction("rOP_MOTOR_GROUP_SPIN", offset);
                 case OP_RETURN:
                         return simple_instruction("OP_RETURN", offset);
 

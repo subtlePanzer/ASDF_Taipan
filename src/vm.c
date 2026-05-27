@@ -543,6 +543,29 @@ static InterpretResult run(void* abort_flag, void* main_handle, void* vm_clean) 
                                 close_upvalues(vm.stack_top - 1);
                                 pop();
                                 break;
+                        case rOP_DT_SPIN:
+                                if (!IS_NUMBER(peek(0))) runtime_error("Drivetrain power must be a number.");
+                                int power = AS_NUMBER(pop());
+
+                                motor_move(motor_left_front, power);
+                                motor_move(motor_left_mid, power);
+                                motor_move(motor_left_rear, power);
+                                motor_move(motor_right_front, power);
+                                motor_move(motor_right_mid, power);
+                                motor_move(motor_right_rear, power);
+                                break;
+                        case rOP_MOTOR_SPIN:
+                                Value mpower = pop();
+                                Value port = pop();
+                                if (!IS_PORT(port))
+                                        runtime_error("Can only spin a port");
+                                if (!IS_NUMBER(mpower))
+                                        runtime_error("Motor power must be a number.");
+
+                                motor_move(AS_PORT(port), AS_NUMBER(mpower));
+                                break;
+                        case rOP_MOTOR_GROUP_SPIN:
+                                break; // TODO:
                         case OP_RETURN: {
                                 // Exit interpreter;
                                 Value result = pop();

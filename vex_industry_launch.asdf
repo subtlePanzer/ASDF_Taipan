@@ -1,0 +1,33 @@
+// --------------------------------------------------------------------
+// ASDF 2026-2027 'Taipan' language - (c) 2026 Riley Lorenz  & ASDF Robotics
+// --------------------------------------------------------------------
+
+// Override PID constants
+drive_pid 0.4 0.01 0.1;
+turn_pid 0.65 0.003 0.025;
+
+// define some custom motors ; Drivetrain is a builtin
+motorgroup lift 7 8;
+motor lift_1 3;
+
+// define a custom function or 'subroutine' called lift_up
+subroutine lift_up(speed) {
+	motor_spin lift_1 speed;
+
+	while(get_motor_position(lift_1) < 90) { // call a native function; small overhead however easy to implement lots of these
+		delay(10);
+	}
+
+	motor_spin lift_1 0;
+}
+
+// Main routine
+dt_spin 50;  // call a builtin command; compiled away to a direct hardware command; no overhead
+lift_up(15); 
+claw_grab;   // call a different builtin; these are *part of the language*, ie. they're builtin like def or using in python
+dt_turn 90 right;
+lift_up(-15); // call the subroutine
+dt_spin -30;
+claw_release;
+
+end; // optional, switch to driver control immediately rather than wait for timeout

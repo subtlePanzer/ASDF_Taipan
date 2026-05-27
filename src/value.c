@@ -40,6 +40,7 @@ void print_value(Value value) {
                 case VAL_NIL: printf("nil"); break;
                 case VAL_NUMBER: printf("%g", AS_NUMBER(value)); break;
                 case VAL_OBJ: print_object(value); break;
+                case VAL_PORT: printf("<port %d>", AS_PORT(value));
         }
 }
 
@@ -55,6 +56,8 @@ void screen_print_value(Value value) {
                 case VAL_OBJ:
                         screen_print(E_TEXT_MEDIUM, 0, stringify_object(value));
                         break;
+                case VAL_PORT:
+                        screen_print(E_TEXT_MEDIUM, 0, "<port %d>", AS_PORT(value));
         }
 }
 

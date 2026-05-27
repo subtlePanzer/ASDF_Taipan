@@ -894,11 +894,35 @@ static void declaration() {
         if (parser.panic_mode) synchronise();
 }
 
+static void dt_set_statement() { // TODO: add a version for turning ie. different inputs on each side
+        expression();
+        consume(TOKEN_SEMICOLON, "Expect ';' after value.");
+        emit_byte(rOP_DT_SPIN);
+}
+
+static void motor_set_statement() {
+        expression();
+        consume(TOKEN_SEMICOLON, "Expect ';' after port.");
+        emit_byte(rOP_MOTOR_SPIN);
+}
+
+static void motorgroup_set_statement() {
+        // pull motorgroup name
+        consume(TOKEN_SEMICOLON, "Expect ';' after motorgroup name.");
+        emit_byte(rOP_MOTOR_GROUP_SPIN);
+}
+
 static void statement() {
         if (match(TOKEN_PRINT_CLI)) {
                 print_cli_statement();
         } else if (match(TOKEN_PRINT_SC)) {
                 print_sc_statement();
+        } else if (match(TOKEN_SET_DT)) {
+                dt_set_statement();
+        } else if (match(TOKEN_SET_MOTOR)) {
+                motor_set_statement();
+        } else if (match(TOKEN_SET_MOTORGROUP)) {
+                motorgroup_set_statement();
         } else if (match(TOKEN_FOR)) {
                 for_statement();
         } else if (match(TOKEN_IF)) {
