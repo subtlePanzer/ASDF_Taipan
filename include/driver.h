@@ -6,6 +6,7 @@
 #define asdf_driver_h
 
 void driver_read_input();
-void driver_apply_input();
+void driver_apply_dt_input();
+void driver_apply_lift_input();
 
 #endif 

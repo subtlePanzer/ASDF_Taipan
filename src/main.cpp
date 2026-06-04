@@ -117,8 +117,9 @@ void opcontrol() {
         printf("=========================OP CONTROL=========================\n");
         printf("🕰️  Driver control period start:\n");
 
-        pros::Task driverReadInputHandler(driver_read_input, "DRIVER INPUT READ");
-        pros::Task driverApplyInputHandler(driver_apply_input, "DRIVER INPUT APPLY");
+        pros::Task driver_read_input_handler(driver_read_input, "DRIVER INPUT READ");
+        pros::Task driver_apply_dt_input_handler(driver_apply_dt_input, "DRIVER DT CTRL");
+        pros::Task driver_appliy_lift_input_handler(driver_apply_lift_input, "DRIVER LIFT CTRL");
 
         while (true) {
                 pros::delay(100);

@@ -40,7 +40,7 @@ void driver_read_input() {
         } while (true);
 }
 
-void driver_apply_input() {
+void driver_apply_dt_input() {
         do {
                 int i = atomic_load(&axis_left_y) + atomic_load(&axis_left_x);
                 // motor_move(motor_left_front, i);
@@ -56,5 +56,15 @@ void driver_apply_input() {
                 set_motor_group_wrapper(&robot_hardware.MOTORGROUP_R, k);
 
                 delay(9);
+        } while (true);
+}
+
+void driver_apply_lift_input() {
+        do {
+                int lift_force = (int)(lift_control_factor * (float)atomic_load(&axis_right_x));
+
+                motor_move(motor_lift_a, lift_force);
+
+                delay(11);
         } while (true);
 }

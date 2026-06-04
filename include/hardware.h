@@ -39,6 +39,8 @@ typedef enum {
         motor_right_front = 16,
         motor_right_mid = -17,
         motor_right_rear = 18,
+
+        motor_lift_a = 10
 } standard_ports;
 
 typedef struct
