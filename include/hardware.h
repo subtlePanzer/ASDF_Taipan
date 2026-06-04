@@ -29,6 +29,8 @@ extern lang_agn_atomic_int axis_left_y;
 extern lang_agn_atomic_int axis_right_x;
 extern lang_agn_atomic_int axis_right_y;
 
+extern float lift_control_factor;
+
 typedef enum {
         motor_left_front = -13,
         motor_left_mid = 14,
@@ -48,13 +50,6 @@ typedef struct
 
 typedef struct hardware
 {
-        int8_t MOTOR_L1;
-        int8_t MOTOR_L2;
-        int8_t MOTOR_L3;
-
-        int8_t MOTOR_R1;
-        int8_t MOTOR_R2;
-        int8_t MOTOR_R3;
         motor_group_wrapper MOTORGROUP_L;
         motor_group_wrapper MOTORGROUP_R;
 } hardware;

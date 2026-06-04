@@ -43,24 +43,17 @@ void driver_read_input() {
 void driver_apply_input() {
         do {
                 int i = atomic_load(&axis_left_y) + atomic_load(&axis_left_x);
-                motor_move(motor_left_front, i);
-                motor_move(motor_left_mid, i);
-                motor_move(motor_left_rear, i);
+                // motor_move(motor_left_front, i);
+                // motor_move(motor_left_mid, i);
+                // motor_move(motor_left_rear, i);
 
                 int k = atomic_load(&axis_left_y) - atomic_load(&axis_left_x);
-                motor_move(motor_right_front, k);
-                motor_move(motor_right_mid, k);
-                motor_move(motor_right_rear, k);
+                // motor_move(motor_right_front, k);
+                // motor_move(motor_right_mid, k);
+                // motor_move(motor_right_rear, k);
 
-                // for some reason this doesn't work, TODO: fix
-                // motor_move(robot_hardware.MOTOR_R1, i);
-                // motor_move(robot_hardware.MOTOR_R2, i);
-                // motor_move(robot_hardware.MOTOR_R3, i);
-
-                // set_motor_group_wrapper(&robot_hardware.MOTORGROUP_L,
-                //         atomic_load(&axis_left_y) + atomic_load(&axis_right_x));
-                // set_motor_group_wrapper(&robot_hardware.MOTORGROUP_R,
-                //         atomic_load(&axis_left_y) - atomic_load(&axis_right_x));
+                set_motor_group_wrapper(&robot_hardware.MOTORGROUP_L, i);
+                set_motor_group_wrapper(&robot_hardware.MOTORGROUP_R, k);
 
                 delay(9);
         } while (true);

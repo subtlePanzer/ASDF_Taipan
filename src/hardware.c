@@ -23,23 +23,18 @@ lang_agn_atomic_int axis_left_y;
 lang_agn_atomic_int axis_right_x;
 lang_agn_atomic_int axis_right_y;
 
-void init_hardware() {
-        robot_hardware.MOTOR_L1 = (uint8_t)motor_left_front;
-        robot_hardware.MOTOR_L2 = (uint8_t)motor_left_mid;
-        robot_hardware.MOTOR_L3 = (uint8_t)motor_left_rear;
-        robot_hardware.MOTOR_R1 = (uint8_t)motor_right_front;
-        robot_hardware.MOTOR_R2 = (uint8_t)motor_right_mid;
-        robot_hardware.MOTOR_R3 = (uint8_t)motor_right_rear;
+float lift_control_factor = 0.45;
 
+void init_hardware() {
         new_motor_group_wrapper(&robot_hardware.MOTORGROUP_L,
-                robot_hardware.MOTOR_L1,
-                robot_hardware.MOTOR_L2,
-                robot_hardware.MOTOR_L3);
+                motor_left_front,
+                motor_left_mid,
+                motor_left_rear);
 
         new_motor_group_wrapper(&robot_hardware.MOTORGROUP_R,
-                robot_hardware.MOTOR_R1,
-                robot_hardware.MOTOR_R2,
-                robot_hardware.MOTOR_R3);
+                motor_right_front,
+                motor_right_mid,
+                motor_right_rear);
 
         atomic_init(&button_a_state, false);
         atomic_init(&button_b_state, false);
