@@ -6,6 +6,7 @@
 #include "driver.h"
 #include "hardware.h"
 
+int stick_deadzone_factor = 1;
 
 static bool isNoBumpersPressed() {
         return !bumper_l1_state &&
@@ -42,28 +43,47 @@ void driver_read_input() {
 
 void driver_apply_dt_input() {
         do {
-                int i = atomic_load(&axis_left_y) + atomic_load(&axis_left_x);
-                // motor_move(motor_left_front, i);
-                // motor_move(motor_left_mid, i);
-                // motor_move(motor_left_rear, i);
+                // Deadzones
+                int axis_h = atomic_load(&axis_left_x);
+                if (abs(axis_h) < stick_deadzone_factor) axis_h = 0;
 
-                int k = atomic_load(&axis_left_y) - atomic_load(&axis_left_x);
-                // motor_move(motor_right_front, k);
-                // motor_move(motor_right_mid, k);
-                // motor_move(motor_right_rear, k);
+                int axis_v = atomic_load(&axis_left_y);
+                if (abs(axis_v) < stick_deadzone_factor) axis_v = 0;
 
-                set_motor_group_wrapper(&robot_hardware.MOTORGROUP_L, i);
-                set_motor_group_wrapper(&robot_hardware.MOTORGROUP_R, k);
+
+                int dt_left = axis_v + axis_h;
+                int dt_right = axis_v - axis_h;
+
+                motor_move(motor_left_front, dt_left);
+                motor_move(motor_left_mid, dt_left);
+                motor_move(motor_left_rear, dt_left);
+
+                motor_move(motor_right_front, dt_right);
+                motor_move(motor_right_mid, dt_right);
+                motor_move(motor_right_rear, dt_right);
+
+                set_motor_group_wrapper(&robot_hardware.MOTORGROUP_L, dt_left);
+                set_motor_group_wrapper(&robot_hardware.MOTORGROUP_R, dt_right);
 
                 delay(9);
         } while (true);
 }
 
 void driver_apply_lift_input() {
+        motor_set_brake_mode(motor_lift_a, E_MOTOR_BRAKE_BRAKE);
         do {
-                int lift_force = (int)(lift_control_factor * (float)atomic_load(&axis_right_x));
+                int lift_force = (int)(lift_control_factor * -(float)atomic_load(&axis_right_y));
 
-                motor_move(motor_lift_a, lift_force);
+                if (adi_digital_read(lim_switch_lift) && lift_force <= 0)
+                        lift_force = 0;
+
+                if (motor_get_current_draw(motor_lift_a) > 2000) // current overdraw
+                        lift_force = 0;
+
+                if (lift_force == 0)
+                        motor_brake(motor_lift_a);
+                else
+                        motor_move(motor_lift_a, lift_force);
 
                 delay(11);
         } while (true);

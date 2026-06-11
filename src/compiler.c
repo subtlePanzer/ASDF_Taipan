@@ -615,6 +615,11 @@ ParseRule rules[] = {
         [TOKEN_WHILE] = {NULL,     NULL,   PREC_NONE},
         [TOKEN_ERROR] = {NULL,     NULL,   PREC_NONE},
         [TOKEN_EOF] = {NULL,     NULL,   PREC_NONE},
+        [TOKEN_SET_DT] = {NULL, NULL, PREC_NONE},
+        [TOKEN_SET_MOTOR] = {NULL, NULL, PREC_NONE},
+        [TOKEN_SET_MOTORGROUP] = {NULL, NULL, PREC_NONE},
+        [TOKEN_MOTOR] = {NULL, NULL, PREC_NONE},
+        [TOKEN_MOTORGROUP] = {NULL, NULL, PREC_NONE},
 };
 
 static void parse_precedence(Precedence precedence) {
@@ -883,9 +888,26 @@ static void synchronise() {
         }
 }
 
+static void motor_decl() {
+        int global = parse_var("Expect variable name.");
+
+        consume(TOKEN_NUMBER, "Expect a port # after motor declaration.");
+        consume(TOKEN_SEMICOLON, "Expect '(' after motor declaration");
+
+        define_var(global);
+}
+
+static void motorgroup_decl() {
+        error("Not implmented.");
+}
+
 static void declaration() {
         if (match(TOKEN_FUN))
                 fun_declaration();
+        else if (match(TOKEN_MOTOR))
+                motor_decl();
+        else if (match(TOKEN_MOTORGROUP))
+                motorgroup_decl();
         else if (match(TOKEN_VAR))
                 var_declaration();
         else

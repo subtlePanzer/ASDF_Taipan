@@ -109,7 +109,6 @@ void autonomous() {
 
         printf("🕰️  Finished auton.\n");
         printf("------------------------------------------------------------\n\n");
-
         opcontrol();
 }
 

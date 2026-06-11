@@ -7,6 +7,7 @@
 
 #include "common.h"
 #include "chunk.h"
+#include "hardware.h"
 #include "value.h"
 
 #define OBJ_TYPE(value)   (AS_OBJ(value)->type)
@@ -15,19 +16,22 @@
 #define IS_FUNCTION(value) is_obj_type(value, OBJ_FUNCTION)
 #define IS_NATIVE(value)   is_obj_type(value, OBJ_NATIVE)
 #define IS_STRING(value)   is_obj_type(value, OBJ_STRING)
+#define IS_MGROUP(value)   is_obj_type(value, OBJ_VAL)
 
 #define AS_CLOSURE(value)  ((ObjClosure*)AS_OBJ(value))
 #define AS_FUNCTION(value) ((ObjFunction*)AS_OBJ(value))
 #define AS_NATIVE(value)   (((ObjNative*)AS_OBJ(value)))->function;
 #define AS_STRING(value)   ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value)  (((ObjString*)AS_OBJ(value))->chars)
+#define AS_MGROUP(value)   ((ObjMGroup*)AS_OBJ(value))
 
 typedef enum {
         OBJ_CLOSURE,
         OBJ_FUNCTION,
         OBJ_NATIVE,
         OBJ_STRING,
-        OBJ_UPVALUE
+        OBJ_UPVALUE,
+        OBJ_MGROUP,
 } ObjType;
 
 struct Obj {
@@ -72,9 +76,17 @@ typedef struct {
         int upvalue_count;
 } ObjClosure;
 
+typedef struct {
+        Obj obj;
+        int motorc;
+        char* name;
+        int8_t* motors;
+} ObjMGroup;
+
 ObjClosure* new_closure(ObjFunction* function);
 ObjFunction* new_function();
 ObjNative* new_native(NativeFn function);
+ObjMGroup* new_mgroup(motor_group m);
 
 ObjString* take_string(char* chars, int length);
 ObjString* copy_string(const char* chars, int len);

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "hardware.h"
 #include "memory.h"
 #include "object.h"
 #include "table.h"
@@ -56,6 +57,14 @@ ObjNative* new_native(NativeFn function) {
         ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
         native->function = function;
         return native;
+}
+
+ObjMGroup* new_mgroup(motor_group m) {
+        ObjMGroup* group = ALLOCATE_OBJ(ObjMGroup, OBJ_MGROUP);
+        group->motors = m.motors;
+        group->motorc = m.mcount;
+        group->name = NULL;
+        return group;
 }
 
 static ObjString* allocate_string(char* chars, int len, uint32_t hash) {
@@ -138,8 +147,9 @@ const char* stringify_object(Value value) {
                         return AS_CSTRING(value);
                 case OBJ_UPVALUE:
                         return "upvalue";
+                case OBJ_MGROUP:
+                        return "<motorgroup>";
         }
-
 }
 
 void print_object(Value value) {

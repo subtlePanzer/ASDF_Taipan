@@ -135,6 +135,11 @@ static TokenType identifier_type() {
                         }
                         break;
                 case 'i': return check_keyword(1, 1, "f", TOKEN_IF);
+                case 'm': {
+                        if (is_keyword(1, 4, "otor")) return TOKEN_MOTOR;
+                        if (is_keyword(1, 9, "otorgroup")) return TOKEN_MOTORGROUP;
+                        return TOKEN_IDENTIFIER;
+                }
                 case 'n': return check_keyword(1, 2, "il", TOKEN_NIL);
                 case 'o': return check_keyword(1, 1, "r", TOKEN_OR);
                 case 'p': {

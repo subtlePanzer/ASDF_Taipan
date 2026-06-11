@@ -40,8 +40,12 @@ typedef enum {
         motor_right_mid = -17,
         motor_right_rear = 18,
 
-        motor_lift_a = 10
+        motor_lift_a = 10,
 } standard_ports;
+
+typedef enum {
+        lim_switch_lift = 1, 
+} adi_ports;
 
 typedef struct
 {
@@ -49,6 +53,11 @@ typedef struct
         int8_t m2;
         int8_t m3;
 } motor_group_wrapper;
+
+typedef struct {
+        int mcount;
+        int8_t* motors;
+} motor_group;
 
 typedef struct hardware
 {
