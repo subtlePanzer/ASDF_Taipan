@@ -84,7 +84,7 @@ void driver_apply_lift_input() {
 
                 if (motor_get_current_draw(motor_lift_a) > 2000)
                 {
-                        lift_force = 0; // prevent stripping shafts hopefully
+                        lift_force = 0; // prevent twisting shafts again hopefully
                         motor_set_zero_position(motor_lift_a, 0.1); // Check if maybe I want to protect the brain by reversing or something similar?
                 }
 
