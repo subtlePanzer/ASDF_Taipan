@@ -77,8 +77,16 @@ void driver_apply_lift_input() {
                 if (adi_digital_read(lim_switch_lift) && lift_force <= 0)
                         lift_force = 0;
 
-                if (motor_get_current_draw(motor_lift_a) > 2000) // current overdraw
+                if (lift_force >= 0 && (motor_get_position(motor_lift_a) >= -LIFT_EPSILON)) // current overdraw
+                {
                         lift_force = 0;
+                }
+
+                if (motor_get_current_draw(motor_lift_a) > 2000)
+                {
+                        lift_force = 0; // prevent stripping shafts hopefully
+                        motor_set_zero_position(motor_lift_a, 0.1); // Check if maybe I want to protect the brain by reversing or something similar?
+                }
 
                 if (lift_force == 0)
                         motor_brake(motor_lift_a);

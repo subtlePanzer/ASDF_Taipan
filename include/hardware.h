@@ -65,6 +65,8 @@ typedef struct hardware
         motor_group_wrapper MOTORGROUP_R;
 } hardware;
 
+#define LIFT_EPSILON 0.1 // The distance it will stop from the brain, roughly
+
 static hardware robot_hardware;
 
 void init_hardware();
