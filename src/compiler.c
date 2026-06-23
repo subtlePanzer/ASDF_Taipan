@@ -889,16 +889,31 @@ static void synchronise() {
 }
 
 static void motor_decl() {
-        int global = parse_var("Expect variable name.");
+        int global = parse_var("Expect motor name.");
 
-        consume(TOKEN_NUMBER, "Expect a port # after motor declaration.");
-        consume(TOKEN_SEMICOLON, "Expect '(' after motor declaration");
+        if (!check(TOKEN_SEMICOLON))
+                expression();
+        else
+                emit_byte(OP_NIL);
+
+        consume(TOKEN_SEMICOLON, "Expect ';' after motor declaration");
 
         define_var(global);
 }
 
 static void motorgroup_decl() {
-        error("Not implmented.");
+        int global = parse_var("Expect motorgroup name.");
+
+        if (check(TOKEN_SEMICOLON))
+                emit_byte(OP_NIL);
+        else
+                do {
+                        expression();
+                } while (!check(TOKEN_SEMICOLON));
+
+        consume(TOKEN_SEMICOLON, "Expect ';' after motorgroup declaration");
+
+        define_var(global);
 }
 
 static void declaration() {

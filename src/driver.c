@@ -71,22 +71,21 @@ void driver_apply_dt_input() {
 
 void driver_apply_lift_input() {
         motor_set_brake_mode(motor_lift_a, E_MOTOR_BRAKE_BRAKE);
+        adi_port_set_config(1, E_ADI_DIGITAL_IN);
         do {
-                int lift_force = (int)(lift_control_factor * -(float)atomic_load(&axis_right_y));
+                int lift_force = (int)(lift_control_factor * -(float)atomic_load(&axis_right_y) + lift_bias);
 
-                if (adi_digital_read(lim_switch_lift) && lift_force <= 0)
+                if (adi_digital_read(1) && lift_force <= 0)
                         lift_force = 0;
 
-                if (lift_force >= 0 && (motor_get_position(motor_lift_a) >= -LIFT_EPSILON)) // current overdraw
-                {
-                        lift_force = 0;
-                }
+                // if (lift_force >= 0 && (motor_get_position(motor_lift_a) >= -LIFT_EPSILON))
+                //         lift_force = 0;
 
-                if (motor_get_current_draw(motor_lift_a) > 2000)
-                {
-                        lift_force = 0; // prevent twisting shafts again hopefully
-                        motor_set_zero_position(motor_lift_a, 0.1); // Check if maybe I want to protect the brain by reversing or something similar?
-                }
+                // if (motor_get_current_draw(motor_lift_a) > 2000) // Default current limit is 2500 before the motor shuts down, we can override that if needed
+                // {
+                //         lift_force = 0; // prevent twisting shafts again hopefully
+                //         motor_set_zero_position(motor_lift_a, 0.1); // Check if maybe I want to protect the brain by reversing or something similar?
+                // }
 
                 if (lift_force == 0)
                         motor_brake(motor_lift_a);

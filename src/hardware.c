@@ -23,7 +23,8 @@ lang_agn_atomic_int axis_left_y;
 lang_agn_atomic_int axis_right_x;
 lang_agn_atomic_int axis_right_y;
 
-float lift_control_factor = 1.0;
+float lift_control_factor = 0.85;
+float lift_bias = -3.0;
 
 void init_hardware() {
         new_motor_group_wrapper(&robot_hardware.MOTORGROUP_L,

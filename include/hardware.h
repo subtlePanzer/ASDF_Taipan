@@ -30,6 +30,7 @@ extern lang_agn_atomic_int axis_right_x;
 extern lang_agn_atomic_int axis_right_y;
 
 extern float lift_control_factor;
+extern float lift_bias;
 
 typedef enum {
         motor_left_front = -13,
