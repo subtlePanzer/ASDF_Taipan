@@ -14,7 +14,7 @@ motor lift_1 3;
 subroutine lift_up(speed) {
 	motor_spin lift_1 speed;
 
-	while(get_motor_position(lift_1) < 90) { // call a native function; small overhead however easy to implement lots of these
+	while(get_motor_position(lift_1) < 90) { // call a native function ; small overhead however easy to implement lots of these
 		delay(10);
 	}
 
@@ -22,9 +22,9 @@ subroutine lift_up(speed) {
 }
 
 // Main routine
-dt_spin 50;  // call a builtin command; compiled away to a direct hardware command; no overhead
+dt_spin 50;  // call a builtin command ; compiled away to a direct hardware command; no overhead
 lift_up(15); 
-claw_grab;   // call a different builtin; these are *part of the language*, ie. they're builtin like def or using in python
+claw_grab;   // call a different builtin ; these are *part of the language*, ie. they're builtin like def or using in python
 dt_turn 90 right;
 lift_up(-15); // call the subroutine
 dt_spin -30;

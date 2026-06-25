@@ -1,0 +1,12 @@
+while (true) {
+        var input_y = get_stick_position(3);
+        var input_x = get_stick_position(4);
+
+        if (input_x == 0) {
+                dt_spin input_y;
+        } else {
+                dt_turn input_x;
+        }
+
+        delay(50);
+}
