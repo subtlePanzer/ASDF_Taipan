@@ -29,6 +29,10 @@ typedef enum { // Vector OPs?
         OP_SET_GLOBAL_LONG,
         OP_GET_UPVALUE,
         OP_SET_UPVALUE,
+        OP_DEFINE_MG,
+        OP_DEFINE_MG_LONG,
+        OP_GET_MG,
+        OP_GET_MG_LONG,
         OP_EQ,
         OP_NEQ,
         OP_GT,
@@ -56,6 +60,7 @@ typedef enum { // Vector OPs?
         rOP_MOTOR_SPIN, // rOP = robot OP
         rOP_MOTOR_GROUP_SPIN,
         rOP_DT_SPIN,
+        rOP_DT_TURN,
         OP_RETURN,
 } opcode; // TODO: OP_HLT -> halt until a 'hardware interrupt' ie. thread says so
 

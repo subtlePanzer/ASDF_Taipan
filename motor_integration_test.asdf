@@ -2,8 +2,23 @@
 // ASDF 2026-27 'Taipan' language - (c) 2026 Riley Lorenz  & ASDF Robotics
 // --------------------------------------------------------------------
 
+
+// Drive forwards
 set_dt 50;
 delay(500);
+
+// Do a wiggle
+turn_dt 30;
+delay(300);
+turn_dt -30;
+delay(300);
+
+
+// Drive backwards
 set_dt -50;
 delay(500);
+
+point_to_point(25, 50);
+
+// Stop the drivetrain
 set_dt 0;

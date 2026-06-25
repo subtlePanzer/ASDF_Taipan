@@ -428,6 +428,21 @@ static void define_var(int global) {
                 emit_bytes(OP_DEFINE_GLOBAL, global);
 }
 
+static void define_mg(int global) {
+        if (current->scope_depth > 0) {
+                mark_init();
+                return;
+        }
+
+        if (global > UINT8_MAX)
+                emit_4_bytes(OP_DEFINE_MG_LONG,
+                        global & 0xff,
+                        (global >> 8) & 0xff,
+                        (global >> 16) & 0xff);
+        else
+                emit_bytes(OP_DEFINE_MG, global);
+}
+
 static int arg_list() {
         int argc = 0; // make long call?
         if (!check(TOKEN_RIGHT_PAREN)) {
@@ -904,16 +919,9 @@ static void motor_decl() {
 static void motorgroup_decl() {
         int global = parse_var("Expect motorgroup name.");
 
-        if (check(TOKEN_SEMICOLON))
-                emit_byte(OP_NIL);
-        else
-                do {
-                        expression();
-                } while (!check(TOKEN_SEMICOLON));
+        consume(TOKEN_SEMICOLON, "Expect ';' after motorgroup declaration. (Motorgroups are unfinished.)");
 
-        consume(TOKEN_SEMICOLON, "Expect ';' after motorgroup declaration");
-
-        define_var(global);
+        define_mg(global);
 }
 
 static void declaration() {
@@ -937,6 +945,12 @@ static void dt_set_statement() { // TODO: add a version for turning ie. differen
         emit_byte(rOP_DT_SPIN);
 }
 
+static void dt_turn_statement() {
+        expression();
+        consume(TOKEN_SEMICOLON, "Expect ';' after turn speed.");
+        emit_byte(rOP_DT_TURN);
+}
+
 static void motor_set_statement() {
         expression();
         consume(TOKEN_SEMICOLON, "Expect ';' after port.");
@@ -956,6 +970,8 @@ static void statement() {
                 print_sc_statement();
         } else if (match(TOKEN_SET_DT)) {
                 dt_set_statement();
+        } else if (match(TOKEN_TURN_DT)) {
+                dt_turn_statement();
         } else if (match(TOKEN_SET_MOTOR)) {
                 motor_set_statement();
         } else if (match(TOKEN_SET_MOTORGROUP)) {

@@ -363,6 +363,26 @@ static InterpretResult run(void* abort_flag, void* main_handle, void* vm_clean) 
                                 push(value);
                                 break;
                         }
+                        case OP_GET_MG: {
+                                ObjString* name = READ_STRING();
+                                Value value;
+                                if (!table_get(&vm.globals, name, &value)) {
+                                        runtime_error("Undefined motorgroup '%s'.", name->chars);
+                                        return INTERPRET_RUNTIME_ERROR;
+                                }
+                                push(value);
+                                break;
+                        }
+                        case OP_GET_MG_LONG: {
+                                ObjString* name = READ_LONG_STRING();
+                                Value value;
+                                if (!table_get(&vm.globals, name, &value)) {
+                                        runtime_error("Undefined motorgroup '%s'.", name->chars);
+                                        return INTERPRET_RUNTIME_ERROR;
+                                }
+                                push(value);
+                                break;
+                        }
                         case OP_DEFINE_GLOBAL: {
                                 ObjString* name = READ_STRING();
                                 table_set(&vm.globals, name, peek(0));
@@ -370,6 +390,18 @@ static InterpretResult run(void* abort_flag, void* main_handle, void* vm_clean) 
                                 break;
                         }
                         case OP_DEFINE_GLOBAL_LONG: {
+                                ObjString* name = READ_LONG_STRING();
+                                table_set(&vm.globals, name, peek(0));
+                                pop();
+                                break;
+                        }
+                        case OP_DEFINE_MG: {
+                                ObjString* name = READ_STRING();
+                                table_set(&vm.globals, name, peek(0));
+                                pop();
+                                break;
+                        }
+                        case OP_DEFINE_MG_LONG: {
                                 ObjString* name = READ_LONG_STRING();
                                 table_set(&vm.globals, name, peek(0));
                                 pop();
@@ -553,6 +585,17 @@ static InterpretResult run(void* abort_flag, void* main_handle, void* vm_clean) 
                                 motor_move(motor_right_front, power);
                                 motor_move(motor_right_mid, power);
                                 motor_move(motor_right_rear, power);
+                                break;
+                        case rOP_DT_TURN:
+                                if (!IS_NUMBER(peek(0))) runtime_error("Drivetrain turn power must be a number.");
+                                int turn_diff = 0.5 * AS_NUMBER(pop());
+
+                                motor_move(motor_left_front, turn_diff);
+                                motor_move(motor_left_mid, turn_diff);
+                                motor_move(motor_left_rear, turn_diff);
+                                motor_move(motor_right_front, -turn_diff);
+                                motor_move(motor_right_mid, -turn_diff);
+                                motor_move(motor_right_rear, -turn_diff);
                                 break;
                         case rOP_MOTOR_SPIN:
                                 Value mpower = pop();

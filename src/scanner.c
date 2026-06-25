@@ -83,6 +83,7 @@ static void skip_ws() {
                         case ' ':
                         case '\r':
                         case '\t':
+                        case ':':
                                 advance();
                                 break;
                         case '\n':
