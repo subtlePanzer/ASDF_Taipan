@@ -42,7 +42,7 @@ static float av_motor_pos(void) {
         return sum / DT_MOTOR_C;
 }
 
-void position_tracker(void) {
+void dead_reckoning_position_tracker(void) {
         init_dead_reckoner();
 
         float cx, cy, dx, dy, d, last_d, theta;

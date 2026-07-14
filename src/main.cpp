@@ -7,6 +7,7 @@
 extern "C" {
 #include "api.h"
 #include "auton.h"
+#include "dead_reckoning.h"
 #include "driver.h"
 #include "hardware.h"
 #include "object.h"
@@ -86,11 +87,17 @@ void autonomous() {
 
                 params->main_handle = &main_task;
 
+                printf("🐍 Initialising autonomous sensors\n");
+                pros::Task auton_sensor_task(auton_read_sensors, "AUTON SENSOR READ");
+
+                printf("🚢 Initialising dead reckoning\n");
+                pros::Task dead_reckoning_task(dead_reckoning_position_tracker, "AUTON DEAD RECKON / POS TRACKER");
+
                 printf("🐍 Delegating to runtime\n");
 
                 pros::Task taipan_runtime_task(run_script, params, "TAIPAN RUNTIME");
                 pros::Task taipan_runtime_aborter_task(delay_thrd, (void*)main_task, "TAIPAN RUNTIME ABORTER");
-                pros::Task auton_sensor_task(auton_read_sensors, "AUTON SENSOR READ");
+
 
                 pros::c::task_notify_take(true, TIMEOUT_MAX);
                 abort_auton.store(true);

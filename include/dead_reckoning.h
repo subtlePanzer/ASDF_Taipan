@@ -14,6 +14,6 @@ extern lang_agn_atomic_int curr_y;
 
 vec2 get_pos(void);
 
-void position_tracker(void);
+void dead_reckoning_position_tracker(void);
 
 #endif

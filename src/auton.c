@@ -59,12 +59,40 @@ void auton_point_to_point(vec2 target) {
 
         // PID with heading lock
         float dkp = 1.6; // P to distance -> roughly speed
-        float hkp = 0.7; // P to heading error -> heading lock gain
+        float hkp = 0.7; // P to heading error -> heading lock gain | must be less than 0 or robot will not be able to drive straight
 
         float dist = 99999;
         float last_dist = 99999;
-        do {
+        do { // TODO: add timeout
+                // update the delta
+                delta.x = target.x - atomic_load(&curr_x);
+                delta.y = target.y - atomic_load(&curr_y);
 
+                dist = get_mag(delta);
+                float h = atomic_load(&heading);
+
+                float fpower = dkp * dist;
+                float dot = delta.x * cos(h) + delta.y * sin(h);
+
+                if (dot < 0) fpower = -dkp * dist;
+
+                // Determine drift for heading lock
+                float h_error = shd(h * RAD2DEG, target_degrees);
+
+                float turn_correct = h_error * hkp;
+
+                float dt_left = fpower - turn_correct;
+                float dt_right = fpower + turn_correct;
+
+                motor_move(motor_left_front, dt_left); // make this a fucking function (MACRO YOU DUMB MF)
+                motor_move(motor_left_mid, dt_left);
+                motor_move(motor_left_rear, dt_left);
+
+                motor_move(motor_right_front, dt_right);
+                motor_move(motor_right_mid, dt_right);
+                motor_move(motor_right_rear, dt_right);
+
+                last_dist = dist;
         } while (fabs(dist) > 10.0);
 }
 
