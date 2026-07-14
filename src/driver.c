@@ -62,8 +62,8 @@ void driver_apply_dt_input() {
                 motor_move(motor_right_mid, dt_right);
                 motor_move(motor_right_rear, dt_right);
 
-                set_motor_group_wrapper(&robot_hardware.MOTORGROUP_L, dt_left);
-                set_motor_group_wrapper(&robot_hardware.MOTORGROUP_R, dt_right);
+                // set_motor_group_wrapper(&robot_hardware.MOTORGROUP_L, dt_left);
+                // set_motor_group_wrapper(&robot_hardware.MOTORGROUP_R, dt_right);
 
                 delay(9);
         } while (true);

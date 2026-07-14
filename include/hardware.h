@@ -29,8 +29,22 @@ extern lang_agn_atomic_int axis_left_y;
 extern lang_agn_atomic_int axis_right_x;
 extern lang_agn_atomic_int axis_right_y;
 
+extern lang_agn_atomic_int heading;
+
 extern float lift_control_factor;
 extern float lift_bias;
+
+const enum {
+        dt_left_front,
+        dt_left_mid,
+        dt_left_rear,
+
+        dt_right_front,
+        dt_right_mid,
+        dt_right_rear,
+
+        DT_MOTOR_C // auto determined
+} dt_motors;
 
 typedef enum {
         motor_left_front = -13,
@@ -42,10 +56,22 @@ typedef enum {
         motor_right_rear = 18,
 
         motor_lift_a = 10,
+
+        imu_port = 7,
 } standard_ports;
 
+static const int8_t DT_MOTOR_PORTS[DT_MOTOR_C] = {
+        [dt_left_front]motor_left_front,
+        [dt_left_mid]motor_left_mid,
+        [dt_left_rear]motor_left_rear,
+
+        [dt_right_front]motor_right_front,
+        [dt_right_mid]motor_right_mid,
+        [dt_right_rear]motor_right_rear
+};
+
 typedef enum {
-        lim_switch_lift = 1, 
+        lim_switch_lift = 1,
 } adi_ports;
 
 typedef struct

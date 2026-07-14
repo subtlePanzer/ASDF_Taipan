@@ -9,6 +9,7 @@
 #include <time.h>
 
 #include "api.h"
+#include "auton.h"
 #include "common.h"
 #include "compiler.h"
 #include "debug.h"
@@ -123,6 +124,20 @@ static Value stick_position_native(int argc, Value* argv) {
         runtime_error("Wrong argument types passed to function 'get_stick_position'.\n");
 }
 
+static Value auto_p2p_native(int argc, Value* argv) {
+        verify_native_arguments(argc, 2, "auto_p2p");
+
+        if (argv->type == VAL_NUMBER && (argv + 1)->type) {
+                vec2 target;
+                target.x = argv->as.number;
+                target.y = (argv + 1)->as.number;
+
+                auton_point_to_point(target);
+                return;
+        }
+        runtime_error("Wrong argument types passed to function 'auto_p2p'.\n");
+}
+
 static void define_native(const char* name, NativeFn function) {
         push(OBJ_VAL(copy_string(name, (int)strlen(name))));
         push(OBJ_VAL(new_native(function)));
@@ -148,6 +163,7 @@ void init_VM() {
         define_native("delay", delay_native);
         define_native("is_button_down", button_down_native);
         define_native("get_stick_position", stick_position_native);
+        define_native("auto_p2p", auto_p2p_native);
 }
 
 void free_VM() {

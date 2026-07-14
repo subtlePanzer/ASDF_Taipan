@@ -23,6 +23,8 @@ lang_agn_atomic_int axis_left_y;
 lang_agn_atomic_int axis_right_x;
 lang_agn_atomic_int axis_right_y;
 
+lang_agn_atomic_int heading;
+
 float lift_control_factor = 0.85;
 float lift_bias = -3.0;
 

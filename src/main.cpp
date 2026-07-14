@@ -6,6 +6,7 @@
 
 extern "C" {
 #include "api.h"
+#include "auton.h"
 #include "driver.h"
 #include "hardware.h"
 #include "object.h"
@@ -87,8 +88,9 @@ void autonomous() {
 
                 printf("🐍 Delegating to runtime\n");
 
-                pros::Task taipan_runtime_task(run_script, params, "TAIPAN_RUNTIME");
-                pros::Task taipan_runtime_aborter_task(delay_thrd, (void*)main_task, "TAIPAN_RUNTIME_ABORTER");
+                pros::Task taipan_runtime_task(run_script, params, "TAIPAN RUNTIME");
+                pros::Task taipan_runtime_aborter_task(delay_thrd, (void*)main_task, "TAIPAN RUNTIME ABORTER");
+                pros::Task auton_sensor_task(auton_read_sensors, "AUTON SENSOR READ");
 
                 pros::c::task_notify_take(true, TIMEOUT_MAX);
                 abort_auton.store(true);
