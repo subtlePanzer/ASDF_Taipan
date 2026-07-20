@@ -27,7 +27,7 @@ extern robot_config ROBOT_CONFIG;
 
 void get_config(void);
 
-char* get_config_str(char* key);
-double get_config_num(char* key);
+char* get_config_str(char* key, char* fallback);
+double get_config_num(char* key, double fallback);
 
 #endif
