@@ -10,6 +10,7 @@ extern "C" {
 #include "dead_reckoning.h"
 #include "driver.h"
 #include "hardware.h"
+#include "ini_loader.h"
 #include "object.h"
 #include "tp_main.h"
 #include "vm.h"
@@ -20,6 +21,9 @@ run_script_params* params;
 void initialize() {
         printf("============================INIT============================\n");
         printf("🕰️  Initialisation period start...\n");
+
+        // Pull ini files
+        get_config();
 
         // robot
         init_hardware();

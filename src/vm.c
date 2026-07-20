@@ -133,7 +133,7 @@ static Value auto_p2p_native(int argc, Value* argv) {
                 target.y = (argv + 1)->as.number;
 
                 auton_point_to_point(target);
-                return;
+                return BOOL_VAL(true);
         }
         runtime_error("Wrong argument types passed to function 'auto_p2p'.\n");
 }

@@ -23,6 +23,14 @@ void init_bootloader() {
         bootloader.has_usd = !!usd_is_installed();
 }
 
+static size_t get_fsize(FILE* file) {
+        fseek(file, 0L, SEEK_END);
+        size_t fsize = ftell(file);
+        rewind(file);
+
+        return fsize;
+}
+
 auton_file_type auton_file_path(const char** out) {
         *out = "";
 
@@ -54,12 +62,4 @@ auton_file_type auton_file_path(const char** out) {
         }
 
         return AFT_NONE;
-}
-
-static size_t get_fsize(FILE* file) {
-        fseek(file, 0L, SEEK_END);
-        size_t fsize = ftell(file);
-        rewind(file);
-
-        return fsize;
 }

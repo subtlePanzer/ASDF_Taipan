@@ -4,7 +4,7 @@
 
 #include "auton.h"
 #include "dead_reckoning.h"
-#include "hardware.c"
+#include "hardware.h"
 #include <stdatomic.h>
 
 #define RAD2DEG (M_PI / 180)
@@ -25,7 +25,7 @@ static float argd(vec2 v) {
 }
 
 static float clamp(float v, float minv, float maxv) {
-        return max(v, min(v, maxv));
+        return fmax(v, fmin(v, maxv));
 }
 
 void auton_point_to_point(vec2 target) {
@@ -61,7 +61,7 @@ void auton_point_to_point(vec2 target) {
         float dkp = 1.6; // P to distance -> roughly speed
         float hkp = 0.7; // P to heading error -> heading lock gain | must be less than 0 or robot will not be able to drive straight
 
-        float dist = 99999;
+        dist = 99999;
         float last_dist = 99999;
         do { // TODO: add timeout
                 // update the delta

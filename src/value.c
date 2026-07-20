@@ -79,14 +79,7 @@ bool values_eq(Value a, Value b) {
                 case VAL_NUMBER: return AS_NUMBER(a) == AS_NUMBER(b);
                 case VAL_OBJ:    return AS_OBJ(a) == AS_OBJ(b);
                 case VAL_PORT:   return AS_PORT(a) == AS_PORT(b);
-                case VAL_MG: {
-                        int8_t ports_a[3] = AS_MG(a);
-                        int8_t ports_b[3] = AS_MG(b);
-
-                        return ports_a[0] == ports_b[0]
-                                && ports_a[1] == ports_b[1]
-                                && ports_a[2] == ports_b[2];
-                }
+                case VAL_MG: false; // FIX
                 default:         return false; // unreachable
         }
 }

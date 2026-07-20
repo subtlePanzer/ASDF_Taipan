@@ -3,7 +3,7 @@
 // -----------------------------------------------------------------------------
 
 #ifndef tp_auton_h
-#define tp_auton_hz
+#define tp_auton_h
 
 typedef struct {
         float x;

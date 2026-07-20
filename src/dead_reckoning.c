@@ -34,7 +34,7 @@ static void init_dead_reckoner(void) {
 }
 
 static float av_motor_pos(void) {
-        float sum;
+        float sum = 0.0;
         for (int i = 0; i < DT_MOTOR_C; i++) {
                 sum += motor_get_position(DT_MOTOR_PORTS[i]);
         }

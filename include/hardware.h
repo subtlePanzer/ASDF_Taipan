@@ -34,7 +34,7 @@ extern lang_agn_atomic_int heading;
 extern float lift_control_factor;
 extern float lift_bias;
 
-const enum {
+typedef enum {
         dt_left_front,
         dt_left_mid,
         dt_left_rear,
@@ -61,13 +61,13 @@ typedef enum {
 } standard_ports;
 
 static const int8_t DT_MOTOR_PORTS[DT_MOTOR_C] = {
-        [dt_left_front]motor_left_front,
-        [dt_left_mid]motor_left_mid,
-        [dt_left_rear]motor_left_rear,
+        [dt_left_front] = motor_left_front,
+        [dt_left_mid] = motor_left_mid,
+        [dt_left_rear] = motor_left_rear,
 
-        [dt_right_front]motor_right_front,
-        [dt_right_mid]motor_right_mid,
-        [dt_right_rear]motor_right_rear
+        [dt_right_front] = motor_right_front,
+        [dt_right_mid] = motor_right_mid,
+        [dt_right_rear] = motor_right_rear
 };
 
 typedef enum {
