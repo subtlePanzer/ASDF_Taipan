@@ -157,7 +157,9 @@ static bool is_alpha(char c) {
 }
 
 static bool is_digit(char c) {
-        return (c >= '0' || c <= '9');
+        return (c >= '0' ||
+                c <= '9' ||
+                c == '-');
 }
 
 #define ERROR(msg) \

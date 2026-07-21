@@ -23,7 +23,7 @@ void initialize() {
         printf("🕰️  Initialisation period start...\n");
 
         // Pull ini files
-        get_config();
+        get_config(); // TODO: Cache values to files
 
         // robot
         init_hardware();
@@ -107,7 +107,7 @@ void autonomous() {
                 abort_auton.store(true);
 
                 while (!vm_cleanup_done.load()) {
-                        pros::delay(10); // wait until vm is ready for completion
+                        pros::delay(get_config_num("vm_cleanup_delay", 10)); // wait until vm is ready for completion
                 }
 
                 if (!atomic_load(&abort_auton))

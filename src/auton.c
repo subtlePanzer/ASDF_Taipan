@@ -5,6 +5,7 @@
 #include "auton.h"
 #include "dead_reckoning.h"
 #include "hardware.h"
+#include "ini_loader.h"
 #include <stdatomic.h>
 
 #define RAD2DEG (M_PI / 180)
@@ -37,7 +38,7 @@ void auton_point_to_point(vec2 target) {
         float target_degrees = argd(delta);
 
         // Do a simple P (without I D) to point roughly at target
-        float turn_kp = 4.0;
+        float turn_kp = get_config_num("p2p_turn_kp", 0.0);
         float turn_power;
         do {
                 float turn_error = shd(atomic_load(&heading) * RAD2DEG, target_degrees);
@@ -58,11 +59,12 @@ void auton_point_to_point(vec2 target) {
         } while (fabs(shd(atomic_load(&heading) * RAD2DEG, target_degrees)));
 
         // PID with heading lock
-        float dkp = 1.6; // P to distance -> roughly speed
-        float hkp = 0.7; // P to heading error -> heading lock gain | must be less than 0 or robot will not be able to drive straight
+        float dkp = get_config_num("p2p_drive_kp", 0.0); // P to distance -> roughly speed
+        float hkp = get_config_num("p2p_heading_kp", 0.7); // P to heading error -> heading lock gain | must be less than 0 or robot will not be able to drive straight
 
         dist = 99999;
         float last_dist = 99999;
+        float dz = get_config_num("p2p_dist_deadzone", 0.0);
         do { // TODO: add timeout
                 // update the delta
                 delta.x = target.x - atomic_load(&curr_x);
@@ -93,7 +95,7 @@ void auton_point_to_point(vec2 target) {
                 motor_move(motor_right_rear, dt_right);
 
                 last_dist = dist;
-        } while (fabs(dist) > 10.0);
+        } while (fabs(dist) > dz);
 }
 
 void auton_read_sensors() {

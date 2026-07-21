@@ -5,8 +5,9 @@
 #include "api.h"
 #include "driver.h"
 #include "hardware.h"
+#include "ini_loader.h"
 
-int stick_deadzone_factor = 1;
+#define stick_deadzone_factor get_config_num("stick_deadzone_factor", 1)
 
 static bool isNoBumpersPressed() {
         return !bumper_l1_state &&
@@ -37,7 +38,7 @@ void driver_read_input() {
                 atomic_store(&bumper_r1_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1));
                 atomic_store(&bumper_r2_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2));
 
-                delay(10); // could even be lower?
+                delay(get_config_num("driver_read_input_delay_msec", 10)); // could even be lower?
         } while (true);
 }
 
@@ -65,7 +66,7 @@ void driver_apply_dt_input() {
                 // set_motor_group_wrapper(&robot_hardware.MOTORGROUP_L, dt_left);
                 // set_motor_group_wrapper(&robot_hardware.MOTORGROUP_R, dt_right);
 
-                delay(9);
+                delay(get_config_num("driver_apply_dt_input_delay_msec", 9));
         } while (true);
 }
 
@@ -92,6 +93,6 @@ void driver_apply_lift_input() {
                 else
                         motor_move(motor_lift_a, lift_force);
 
-                delay(11);
+                delay(get_config_num("driver_lift_controller_delay_msec", 11));
         } while (true);
 }

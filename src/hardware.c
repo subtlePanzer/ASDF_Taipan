@@ -3,6 +3,7 @@
 // -----------------------------------------------------------------------------
 
 #include "hardware.h"
+#include "ini_loader.h"
 
 lang_agn_atomic_bool button_a_state;
 lang_agn_atomic_bool button_b_state;
@@ -25,8 +26,10 @@ lang_agn_atomic_int axis_right_y;
 
 lang_agn_atomic_int heading;
 
-float lift_control_factor = 0.85;
-float lift_bias = -3.0;
+#define lift_control_factor get_config_num("lift_control_factor", 0.85) // Should pull these at the start and cache
+#define lift_bias get_config_num("lift_bias", -3.0)
+// float lift_control_factor = 0.85;
+// float lift_bias = -3.0;
 
 void init_hardware() {
         new_motor_group_wrapper(&robot_hardware.MOTORGROUP_L,

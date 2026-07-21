@@ -21,7 +21,7 @@
 
 VM vm;
 
-#define TP_CLOCKS_PER_SEC 1000
+#define TP_CLOCKS_PER_SEC 1000 // TODO: Executive decision to hardcode this until cached ini-values are implemented
 
 static void reset_stack() {
         vm.stack_top = vm.stack;
