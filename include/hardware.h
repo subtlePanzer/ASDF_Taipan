@@ -31,8 +31,8 @@ extern lang_agn_atomic_int axis_right_y;
 
 extern lang_agn_atomic_int heading;
 
-extern float lift_control_factor;
-extern float lift_bias;
+// extern float lift_control_factor;
+// extern float lift_bias;
 
 typedef enum {
         dt_left_front,
@@ -55,7 +55,9 @@ typedef enum {
         motor_right_mid = -17,
         motor_right_rear = 18,
 
-        motor_lift_a = 10,
+        motor_lift_a = 1,
+        motor_lift_b = -10,
+        motor_claw = 9,
 
         imu_port = 7,
 } standard_ports;

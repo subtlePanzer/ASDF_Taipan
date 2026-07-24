@@ -48,7 +48,7 @@ double get_config_num(char* key, double fallback) {
 }
 
 static char* load_ini_file(void) {
-        if (!usd_is_installed())
+        if (!!!usd_is_installed())
                 return NULL;
 
         FILE* f = fopen("config.ini", "r");
@@ -56,11 +56,15 @@ static char* load_ini_file(void) {
         size_t fsize = ftell(f);
         rewind(f);
 
+        printf("Load ini file A\n");
+
         char* buffer = malloc(fsize + 1);
         if (buffer == NULL) {
                 fprintf(stderr, "Not enough memory to read \"config.ini\".\n");
                 exit(74);
         }
+
+        printf("Load ini file B\n");
 
         size_t bytes_read = fread(buffer, sizeof(char), fsize, f);
 
@@ -71,6 +75,9 @@ static char* load_ini_file(void) {
         buffer[bytes_read] = '\0';
 
         fclose(f);
+
+        printf("Load ini file C\n");
+
         return buffer;
 }
 

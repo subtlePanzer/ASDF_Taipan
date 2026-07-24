@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "Taipan (single stick)",
+    "project_name": "Skills",
     "target": "v5",
     "templates": {
       "kernel": {
@@ -592,9 +592,9 @@
       }
     },
     "upload_options": {
-      "description": "Single stick controls",
-      "slot": 2,
-      "icon": "clawbot"
+      "description": "Dual stick control",
+      "slot": 4,
+      "icon": "X"
     },
     "use_early_access": false
   }

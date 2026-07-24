@@ -11,4 +11,7 @@ void driver_read_input();
 void driver_apply_dt_input();
 void driver_apply_lift_input();
 
+void temp_spin_dt(int left_power, int right_power);
+void temp_c_spin_motor(int motor, int power);
+
 #endif 

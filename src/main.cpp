@@ -83,6 +83,12 @@ void autonomous() {
         printf("🕰️  Autonomous period start:\n");
         pros::screen::print(pros::E_TEXT_MEDIUM, 0, "AUTON");
 
+        printf("🐍 Initialising autonomous sensors\n");
+        pros::Task auton_sensor_task(auton_read_sensors, "AUTON SENSOR READ");
+
+        printf("🚢 Initialising dead reckoning\n");
+        pros::Task dead_reckoning_task(dead_reckoning_position_tracker, "AUTON DEAD RECKON / POS TRACKER");
+
         if (params->func != NULL) {
                 printf("🐍 Running... \n");
                 abort_auton.store(false);
@@ -91,19 +97,11 @@ void autonomous() {
 
                 params->main_handle = &main_task;
 
-                printf("🐍 Initialising autonomous sensors\n");
-                pros::Task auton_sensor_task(auton_read_sensors, "AUTON SENSOR READ");
-
-                printf("🚢 Initialising dead reckoning\n");
-                pros::Task dead_reckoning_task(dead_reckoning_position_tracker, "AUTON DEAD RECKON / POS TRACKER");
-
                 printf("🐍 Delegating to runtime\n");
-
                 pros::Task taipan_runtime_task(run_script, params, "TAIPAN RUNTIME");
                 pros::Task taipan_runtime_aborter_task(delay_thrd, (void*)main_task, "TAIPAN RUNTIME ABORTER");
-
-
                 pros::c::task_notify_take(true, TIMEOUT_MAX);
+
                 abort_auton.store(true);
 
                 while (!vm_cleanup_done.load()) {
@@ -114,6 +112,73 @@ void autonomous() {
                         printf("🐍 Script finished.\n");
         } else {
                 printf("🤖 No script found or compilation failed. Please review error logs.\n");
+
+                printf("🤖 Running temporary auton\n");
+                pros::screen::print(pros::E_TEXT_MEDIUM, 1, "RUNNING TEMPORARY AUTON");
+
+                temp_spin_dt(65, 65);
+                temp_c_spin_motor(motor_claw, 100);
+                pros::delay(200);
+
+                temp_spin_dt(-60, -60);
+                pros::delay(300);
+                temp_spin_dt(10, 10);
+                pros::delay(50);
+                temp_spin_dt(0, 0);
+
+                temp_c_spin_motor(motor_lift_a, -100);
+                temp_c_spin_motor(motor_lift_b, -100);
+                pros::delay(1200);
+                temp_c_spin_motor(motor_lift_a, 100);
+                temp_c_spin_motor(motor_lift_b, 100);
+
+                pros::delay(800);
+                temp_spin_dt(0, 0);
+                temp_spin_dt(20, 20);
+                pros::delay(300);
+                temp_spin_dt(0, 0);
+                temp_c_spin_motor(motor_lift_a, -100);
+                temp_c_spin_motor(motor_lift_b, -100);
+                temp_spin_dt(-30, -30);
+                pros::delay(300);
+                temp_spin_dt(0, 0);
+
+                pros::delay(1200);
+                temp_c_spin_motor(motor_lift_a, 100);
+                temp_c_spin_motor(motor_lift_b, 100);
+                pros::delay(1200);
+                temp_c_spin_motor(motor_lift_a, -100);
+                temp_c_spin_motor(motor_lift_b, -100);
+                pros::delay(1200);
+                temp_c_spin_motor(motor_lift_a, 100);
+                temp_c_spin_motor(motor_lift_b, 100);
+                pros::delay(800);
+                temp_c_spin_motor(motor_lift_a, 0);
+                temp_c_spin_motor(motor_lift_b, 0);
+                temp_spin_dt(60, 60);
+                pros::delay(300);
+                temp_c_spin_motor(motor_lift_a, -80);
+                temp_c_spin_motor(motor_lift_b, -80);
+                temp_spin_dt(0, 100);
+                pros::delay(850);
+                temp_spin_dt(60, 60);
+                pros::delay(300);
+                temp_spin_dt(0, 0);
+                temp_c_spin_motor(motor_lift_a, 80);
+                temp_c_spin_motor(motor_lift_b, 80);
+                pros::delay(1000);
+                temp_c_spin_motor(motor_lift_a, 0);
+                temp_c_spin_motor(motor_lift_b, 0);
+                temp_c_spin_motor(motor_claw, -100);
+                pros::delay(300);
+                temp_c_spin_motor(motor_claw, 0);
+                temp_spin_dt(-100, -100);
+                pros::delay(300);
+                temp_spin_dt(0, -100);
+                pros::delay(850);
+                temp_spin_dt(100, 100);
+                pros::delay(800);
+                temp_spin_dt(0, 0);
         }
 
         printf("🐍 Freeing VM...");
