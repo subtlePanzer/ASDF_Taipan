@@ -37,10 +37,20 @@ void initialize() {
         params->interrupt = &abort_auton;
         params->vm_cleanup_atomic = &vm_cleanup_done;
 
+        uint32_t default_clear_col = pros::screen::get_eraser();
+        pros::screen::set_eraser(0x00FF0000);
+        pros::screen::erase();
+        pros::screen::fill_rect(0, 0, 500, 500);
+        pros::screen::print(TEXT_MEDIUM, 0, "Warning: Setting claw");
+        pros::screen::set_eraser(default_clear_col);
+
+        save_claw_pos();
+        pros::delay(800);
+
         pros::screen::erase();
         pros::screen::print(TEXT_MEDIUM, 0, "Initialised");
-        pros::screen::erase();
         pros::delay(500);
+        pros::screen::erase();
 
         printf("🕰️  Finished init.\n");
         printf("------------------------------------------------------------\n\n");

@@ -7,11 +7,15 @@
 
 extern int stick_deadzone_factor;
 
-void driver_read_input();
-void driver_apply_dt_input();
-void driver_apply_lift_input();
+void driver_read_input(void);
+void driver_apply_dt_input(void);
+void driver_apply_lift_input(void);
 
 void temp_spin_dt(int left_power, int right_power);
 void temp_c_spin_motor(int motor, int power);
 
-#endif 
+#define claw_width_delta 0.48
+
+void save_claw_pos(void);
+
+#endif

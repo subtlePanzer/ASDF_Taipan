@@ -38,7 +38,7 @@ void auton_point_to_point(vec2 target) {
         float target_degrees = argd(delta);
 
         // Do a simple P (without I D) to point roughly at target
-        float turn_kp = get_config_num("p2p_turn_kp", 0.0);
+        float turn_kp = 4.0;
         float turn_power;
         do {
                 float turn_error = shd(atomic_load(&heading) * RAD2DEG, target_degrees);
@@ -59,12 +59,12 @@ void auton_point_to_point(vec2 target) {
         } while (fabs(shd(atomic_load(&heading) * RAD2DEG, target_degrees)));
 
         // PID with heading lock
-        float dkp = get_config_num("p2p_drive_kp", 0.0); // P to distance -> roughly speed
-        float hkp = get_config_num("p2p_heading_kp", 0.7); // P to heading error -> heading lock gain | must be less than 0 or robot will not be able to drive straight
+        float dkp = 1.6; // P to distance -> roughly speed
+        float hkp = 0.7; // P to heading error -> heading lock gain | must be less than 0 or robot will not be able to drive straight
 
         dist = 99999;
         float last_dist = 99999;
-        float dz = get_config_num("p2p_dist_deadzone", 0.0);
+        float dz = 10.0;
         do { // TODO: add timeout
                 // update the delta
                 delta.x = target.x - atomic_load(&curr_x);

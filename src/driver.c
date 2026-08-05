@@ -7,9 +7,18 @@
 #include "hardware.h"
 #include "ini_loader.h"
 
-#define stick_deadzone_factor get_config_num("stick_deadzone_factor", 1)
+// #define stick_deadzone_factor get_config_num("stick_deadzone_factor", 1)
+#define stick_deadzone_factor 1 // TODO: Adjust
 
-static bool isNoBumpersPressed() {
+int claw_rest_pos;
+bool is_claw_open = false;
+
+void save_claw_pos(void) {
+        claw_rest_pos = motor_get_position(motor_claw);
+        is_claw_open = false;
+}
+
+static bool isNoBumpersPressed(void) {
         return !bumper_l1_state &&
                 !bumper_r1_state &&
                 !bumper_l2_state &&
@@ -29,7 +38,6 @@ void temp_spin_dt(int left_power, int right_power) {
 void temp_c_spin_motor(int motor, int power) {
         motor_move(motor, power);
 }
-
 
 void driver_read_input() {
         do {
@@ -106,34 +114,36 @@ void driver_apply_lift_input() {
                 if (adi_digital_read(1) && lift_force <= 0)
                         lift_force = 0;
 
-                if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1))
-                        motor_move(motor_claw, 127.0);
-                else if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2))
-                        motor_move(motor_claw, -127.0);
-                else
+                if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1) && !is_claw_open) {
+                        motor_move_absolute(motor_claw, claw_rest_pos + claw_width_delta, 100.0);
+                        is_claw_open = true;
+                } else if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2) && is_claw_open) {
+                        motor_move_absolute(motor_claw, claw_rest_pos - 0.1, 100.0);
+                        is_claw_open = false;
+                } else
                         motor_move(motor_claw, 0.0);
 
-                printf("Lift state: %i\n", claw_open);
+                        printf("Lift state: %i\n", claw_open);
 
-                lift_delay -= (get_config_num("driver_lift_controller_delay_msec", 11) / 1000.0);
+                        lift_delay -= (get_config_num("driver_lift_controller_delay_msec", 11) / 1000.0);
 
-                // if (lift_force >= 0 && (motor_get_position(motor_lift_a) >= -LIFT_EPSILON))
-                //         lift_force = 0;
+                        // if (lift_force >= 0 && (motor_get_position(motor_lift_a) >= -LIFT_EPSILON))
+                        //         lift_force = 0;
 
-                // if (motor_get_current_draw(motor_lift_a) > 2000) // Default current limit is 2500 before the motor shuts down, we can override that if needed
-                // {
-                //         lift_force = 0; // prevent twisting shafts again hopefully
-                //         motor_set_zero_position(motor_lift_a, 0.1); // Check if maybe I want to protect the brain by reversing or something similar?
-                // }
+                        // if (motor_get_current_draw(motor_lift_a) > 2000) // Default current limit is 2500 before the motor shuts down, we can override that if needed
+                        // {
+                        //         lift_force = 0; // prevent twisting shafts again hopefully
+                        //         motor_set_zero_position(motor_lift_a, 0.1); // Check if maybe I want to protect the brain by reversing or something similar?
+                        // }
 
-                if (lift_force == 0)
-                {
-                        motor_brake(motor_lift_a);
-                        motor_brake(motor_lift_b);
-                } else {
-                        motor_move(motor_lift_a, lift_force);
-                        motor_move(motor_lift_b, lift_force);
-                }
-                delay(get_config_num("driver_lift_controller_delay_msec", 11));
+                        if (lift_force == 0)
+                        {
+                                motor_brake(motor_lift_a);
+                                motor_brake(motor_lift_b);
+                        } else {
+                                motor_move(motor_lift_a, lift_force);
+                                motor_move(motor_lift_b, lift_force);
+                        }
+                        delay(get_config_num("driver_lift_controller_delay_msec", 11));
         } while (true);
 }
