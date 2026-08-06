@@ -16,18 +16,36 @@ extern "C" {
 #include "vm.h"
 };
 
+#ifdef USE_TAIPAN
 run_script_params* params;
+#endif
+
+static void home_claw(void) {
+        uint32_t default_clear_col = pros::screen::get_eraser();
+        pros::screen::set_eraser(0x00FF0000);
+        pros::screen::erase();
+        // pros::screen::fill_rect(5, 5, 240, 200);
+        pros::screen::print(TEXT_MEDIUM, 0, "Warning: Setting claw");
+        pros::screen::set_eraser(default_clear_col);
+
+        save_claw_pos();
+        pros::delay(800);
+        pros::screen::erase();
+}
 
 void initialize() {
         printf("============================INIT============================\n");
-        printf("🕰️  Initialisation period start...\n");
+        printf("Initialisation period start...\n");
 
+#ifdef USE_INI_LOADER
         // Pull ini files
         get_config(); // TODO: Cache values to files
+#endif
 
         // robot
         init_hardware();
 
+#ifdef USE_TAIPAN
         // Taipan
         std::atomic_init(&abort_auton, false);
         std::atomic_init(&vm_cleanup_done, false);
@@ -37,17 +55,10 @@ void initialize() {
         params->interrupt = &abort_auton;
         params->vm_cleanup_atomic = &vm_cleanup_done;
 
-        uint32_t default_clear_col = pros::screen::get_eraser();
-        pros::screen::set_eraser(0x00FF0000);
-        pros::screen::erase();
-        pros::screen::fill_rect(0, 0, 500, 500);
-        pros::screen::print(TEXT_MEDIUM, 0, "Warning: Setting claw");
-        pros::screen::set_eraser(default_clear_col);
+#endif
 
-        save_claw_pos();
-        pros::delay(800);
+        home_claw();
 
-        pros::screen::erase();
         pros::screen::print(TEXT_MEDIUM, 0, "Initialised");
         pros::delay(500);
         pros::screen::erase();
@@ -56,10 +67,15 @@ void initialize() {
         printf("------------------------------------------------------------\n\n");
 }
 
-void disabled() {}
+void disabled() {
 
-void competition_initialize() {}
+}
 
+void competition_initialize() {
+
+}
+
+#ifdef USE_TAIPAN
 void delay_thrd(void* main_task_handle) {
         pros::task_t main = (pros::task_t)main_task_handle;
 
@@ -87,27 +103,31 @@ void delay_thrd(void* main_task_handle) {
         printf("🐍 Script aborted.\n");
         pros::c::task_notify(main);
 }
+#endif
 
 void autonomous() {
         printf("=========================AUTONOMOUS=========================\n");
-        printf("🕰️  Autonomous period start:\n");
+        printf("Autonomous period start:\n");
         pros::screen::print(pros::E_TEXT_MEDIUM, 0, "AUTON");
 
-        printf("🐍 Initialising autonomous sensors\n");
+
+        printf("Initialising autonomous sensors\n");
         pros::Task auton_sensor_task(auton_read_sensors, "AUTON SENSOR READ");
 
-        printf("🚢 Initialising dead reckoning\n");
+
+        printf("Initialising dead reckoning\n");
         pros::Task dead_reckoning_task(dead_reckoning_position_tracker, "AUTON DEAD RECKON / POS TRACKER");
 
+#ifdef USE_TAIPAN
         if (params->func != NULL) {
-                printf("🐍 Running... \n");
+                printf("Running... \n");
                 abort_auton.store(false);
 
                 pros::task_t main_task = pros::c::task_get_current();
 
                 params->main_handle = &main_task;
 
-                printf("🐍 Delegating to runtime\n");
+                printf("Delegating to runtime\n");
                 pros::Task taipan_runtime_task(run_script, params, "TAIPAN RUNTIME");
                 pros::Task taipan_runtime_aborter_task(delay_thrd, (void*)main_task, "TAIPAN RUNTIME ABORTER");
                 pros::c::task_notify_take(true, TIMEOUT_MAX);
@@ -119,11 +139,12 @@ void autonomous() {
                 }
 
                 if (!atomic_load(&abort_auton))
-                        printf("🐍 Script finished.\n");
+                        printf("Script finished.\n");
         } else {
-                printf("🤖 No script found or compilation failed. Please review error logs.\n");
+#endif
+                printf("No script found or compilation failed. Please review error logs.\n");
 
-                printf("🤖 Running temporary auton\n");
+                printf("Running temporary auton\n");
                 pros::screen::print(pros::E_TEXT_MEDIUM, 1, "RUNNING TEMPORARY AUTON");
 
                 temp_spin_dt(65, 65);
@@ -189,29 +210,32 @@ void autonomous() {
                 temp_spin_dt(100, 100);
                 pros::delay(800);
                 temp_spin_dt(0, 0);
+#ifdef USE_TAIPAN
         }
 
-        printf("🐍 Freeing VM...");
+        printf("Freeing VM...");
         free_VM();
         printf("VM freed.\n");
+#endif
 
-        printf("🕰️  Finished auton.\n");
+        printf("Finished auton.\n");
         printf("------------------------------------------------------------\n\n");
         opcontrol();
 }
 
 void opcontrol() {
         printf("=========================OP CONTROL=========================\n");
-        printf("🕰️  Driver control period start:\n");
+        printf("Driver control period start:\n");
 
         pros::Task driver_read_input_handler(driver_read_input, "DRIVER INPUT READ");
         pros::Task driver_apply_dt_input_handler(driver_apply_dt_input, "DRIVER DT CTRL");
         pros::Task driver_appliy_lift_input_handler(driver_apply_lift_input, "DRIVER LIFT CTRL");
 
         while (true) {
+                // Kill this thread
                 pros::delay(100);
         }
 
-        printf("🕰️  Finished driver control period.\n");
+        printf("Finished driver control period.\n");
         printf("------------------------------------------------------------\n\n");
 }

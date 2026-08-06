@@ -10,6 +10,8 @@
 // #define stick_deadzone_factor get_config_num("stick_deadzone_factor", 1)
 #define stick_deadzone_factor 1 // TODO: Adjust
 
+controller_status ct_status;
+
 int claw_rest_pos;
 bool is_claw_open = false;
 
@@ -19,10 +21,10 @@ void save_claw_pos(void) {
 }
 
 static bool isNoBumpersPressed(void) {
-        return !bumper_l1_state &&
-                !bumper_r1_state &&
-                !bumper_l2_state &&
-                !bumper_r2_state;
+        return !ct_status.bumper_l1_state &&
+                !ct_status.bumper_r1_state &&
+                !ct_status.bumper_l2_state &&
+                !ct_status.bumper_r2_state;
 }
 
 void temp_spin_dt(int left_power, int right_power) {
@@ -41,25 +43,25 @@ void temp_c_spin_motor(int motor, int power) {
 
 void driver_read_input() {
         do {
-                atomic_store(&button_a_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_A));
-                atomic_store(&button_b_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_B));
-                atomic_store(&button_x_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_X));
-                atomic_store(&button_y_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_Y));
+                atomic_store(&ct_status.button_a_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_A));
+                atomic_store(&ct_status.button_b_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_B));
+                atomic_store(&ct_status.button_x_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_X));
+                atomic_store(&ct_status.button_y_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_Y));
 
-                atomic_store(&button_up_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_UP));
-                atomic_store(&button_down_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_DOWN));
-                atomic_store(&button_left_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_LEFT));
-                atomic_store(&button_right_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_RIGHT));
+                atomic_store(&ct_status.button_up_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_UP));
+                atomic_store(&ct_status.button_down_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_DOWN));
+                atomic_store(&ct_status.button_left_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_LEFT));
+                atomic_store(&ct_status.button_right_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_RIGHT));
 
-                atomic_store(&axis_left_x, controller_get_analog(E_CONTROLLER_MASTER, E_CONTROLLER_ANALOG_LEFT_X));
-                atomic_store(&axis_left_y, controller_get_analog(E_CONTROLLER_MASTER, E_CONTROLLER_ANALOG_LEFT_Y));
-                atomic_store(&axis_right_x, controller_get_analog(E_CONTROLLER_MASTER, E_CONTROLLER_ANALOG_RIGHT_X));
-                atomic_store(&axis_right_y, controller_get_analog(E_CONTROLLER_MASTER, E_CONTROLLER_ANALOG_RIGHT_Y));
+                atomic_store(&ct_status.axis_left_x, controller_get_analog(E_CONTROLLER_MASTER, E_CONTROLLER_ANALOG_LEFT_X));
+                atomic_store(&ct_status.axis_left_y, controller_get_analog(E_CONTROLLER_MASTER, E_CONTROLLER_ANALOG_LEFT_Y));
+                atomic_store(&ct_status.axis_right_x, controller_get_analog(E_CONTROLLER_MASTER, E_CONTROLLER_ANALOG_RIGHT_X));
+                atomic_store(&ct_status.axis_right_y, controller_get_analog(E_CONTROLLER_MASTER, E_CONTROLLER_ANALOG_RIGHT_Y));
 
-                atomic_store(&bumper_l1_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_L1));
-                atomic_store(&bumper_l2_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_L2));
-                atomic_store(&bumper_r1_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1));
-                atomic_store(&bumper_r2_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2));
+                atomic_store(&ct_status.bumper_l1_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_L1));
+                atomic_store(&ct_status.bumper_l2_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_L2));
+                atomic_store(&ct_status.bumper_r1_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1));
+                atomic_store(&ct_status.bumper_r2_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2));
 
                 delay(get_config_num("driver_read_input_delay_msec", 10)); // could even be lower?
         } while (true);
@@ -72,9 +74,9 @@ static float clamp(float v, float minv, float maxv) {
 void driver_apply_dt_input() {
         do {
                 // Deadzones
-                int axis_h = clamp(atomic_load(&axis_right_x) + atomic_load(&axis_left_x), -127, 127);
+                int axis_h = clamp(atomic_load(&ct_status.axis_right_x) + atomic_load(&ct_status.axis_left_x), -127, 127);
 
-                int axis_v = atomic_load(&axis_left_y);
+                int axis_v = atomic_load(&ct_status.axis_left_y);
 
 
                 if (abs(axis_h) < stick_deadzone_factor) axis_h = 0;
@@ -109,7 +111,7 @@ void driver_apply_lift_input() {
         float lift_delay = 0.0;
         bool claw_open = false;
         do {
-                int lift_force = (int)(lift_control_factor * -(float)atomic_load(&axis_right_y) + lift_bias);
+                int lift_force = (int)(lift_control_factor * -(float)atomic_load(&ct_status.axis_right_y) + lift_bias);
 
                 if (adi_digital_read(1) && lift_force <= 0)
                         lift_force = 0;

@@ -10,24 +10,27 @@
 #include "api.h"
 #include "common.h"
 
-extern lang_agn_atomic_bool button_a_state;
-extern lang_agn_atomic_bool button_b_state;
-extern lang_agn_atomic_bool button_x_state;
-extern lang_agn_atomic_bool button_y_state;
-extern lang_agn_atomic_bool button_up_state;
-extern lang_agn_atomic_bool button_down_state;
-extern lang_agn_atomic_bool button_left_state;
-extern lang_agn_atomic_bool button_right_state;
+typedef struct {
+        lang_agn_atomic_bool button_a_state;
+        lang_agn_atomic_bool button_b_state;
+        lang_agn_atomic_bool button_x_state;
+        lang_agn_atomic_bool button_y_state;
 
-extern lang_agn_atomic_bool bumper_l1_state;
-extern lang_agn_atomic_bool bumper_l2_state;
-extern lang_agn_atomic_bool bumper_r1_state;
-extern lang_agn_atomic_bool bumper_r2_state;
+        lang_agn_atomic_bool button_up_state;
+        lang_agn_atomic_bool button_down_state;
+        lang_agn_atomic_bool button_left_state;
+        lang_agn_atomic_bool button_right_state;
 
-extern lang_agn_atomic_int axis_left_x;
-extern lang_agn_atomic_int axis_left_y;
-extern lang_agn_atomic_int axis_right_x;
-extern lang_agn_atomic_int axis_right_y;
+        lang_agn_atomic_bool bumper_l1_state;
+        lang_agn_atomic_bool bumper_l2_state;
+        lang_agn_atomic_bool bumper_r1_state;
+        lang_agn_atomic_bool bumper_r2_state;
+
+        lang_agn_atomic_int axis_left_x;
+        lang_agn_atomic_int axis_left_y;
+        lang_agn_atomic_int axis_right_x;
+        lang_agn_atomic_int axis_right_y;
+} controller_status;
 
 extern lang_agn_atomic_int heading;
 
