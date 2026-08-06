@@ -5,9 +5,7 @@
 #include "api.h"
 #include "driver.h"
 #include "hardware.h"
-#include "ini_loader.h"
 
-// #define stick_deadzone_factor get_config_num("stick_deadzone_factor", 1)
 #define stick_deadzone_factor 1 // TODO: Adjust
 
 controller_status ct_status;
@@ -28,13 +26,16 @@ static bool isNoBumpersPressed(void) {
 }
 
 void temp_spin_dt(int left_power, int right_power) {
-        motor_move(motor_left_front, left_power);
-        motor_move(motor_left_mid, left_power);
-        motor_move(motor_left_rear, left_power);
+        set_motor_group_wrapper(&robot_hardware.MOTORGROUP_L, left_power);
+        set_motor_group_wrapper(&robot_hardware.MOTORGROUP_L, right_power);
 
-        motor_move(motor_right_front, right_power);
-        motor_move(motor_right_mid, right_power);
-        motor_move(motor_right_rear, right_power);
+        // motor_move(motor_left_front, left_power);
+        // motor_move(motor_left_mid, left_power);
+        // motor_move(motor_left_rear, left_power);
+
+        // motor_move(motor_right_front, right_power);
+        // motor_move(motor_right_mid, right_power);
+        // motor_move(motor_right_rear, right_power);
 }
 
 void temp_c_spin_motor(int motor, int power) {
@@ -63,7 +64,7 @@ void driver_read_input() {
                 atomic_store(&ct_status.bumper_r1_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1));
                 atomic_store(&ct_status.bumper_r2_state, controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2));
 
-                delay(get_config_num("driver_read_input_delay_msec", 10)); // could even be lower?
+                delay(10); // could even be lower?
         } while (true);
 }
 
@@ -97,7 +98,7 @@ void driver_apply_dt_input() {
                 // set_motor_group_wrapper(&robot_hardware.MOTORGROUP_L, dt_left);
                 // set_motor_group_wrapper(&robot_hardware.MOTORGROUP_R, dt_right);
 
-                delay(get_config_num("driver_apply_dt_input_delay_msec", 9));
+                delay(9);
         } while (true);
 }
 
@@ -106,8 +107,8 @@ void driver_apply_lift_input() {
         motor_set_brake_mode(motor_lift_b, E_MOTOR_BRAKE_BRAKE);
         motor_set_brake_mode(motor_claw, E_MOTOR_BRAKE_HOLD);
         adi_port_set_config(1, E_ADI_DIGITAL_IN);
-        float lift_control_factor = get_config_num("lift_control_factor", 0.85);
-        float lift_bias = get_config_num("lift_bias", -3.0);
+        float lift_control_factor = 0.85;
+        float lift_bias = -3.0;
         float lift_delay = 0.0;
         bool claw_open = false;
         do {
@@ -125,27 +126,27 @@ void driver_apply_lift_input() {
                 } else
                         motor_move(motor_claw, 0.0);
 
-                        printf("Lift state: %i\n", claw_open);
+                printf("Claw state: %i\n", claw_open);
 
-                        lift_delay -= (get_config_num("driver_lift_controller_delay_msec", 11) / 1000.0);
+                lift_delay -= (11.0 / 1000.0);
 
-                        // if (lift_force >= 0 && (motor_get_position(motor_lift_a) >= -LIFT_EPSILON))
-                        //         lift_force = 0;
+                // if (lift_force >= 0 && (motor_get_position(motor_lift_a) >= -LIFT_EPSILON))
+                //         lift_force = 0;
 
-                        // if (motor_get_current_draw(motor_lift_a) > 2000) // Default current limit is 2500 before the motor shuts down, we can override that if needed
-                        // {
-                        //         lift_force = 0; // prevent twisting shafts again hopefully
-                        //         motor_set_zero_position(motor_lift_a, 0.1); // Check if maybe I want to protect the brain by reversing or something similar?
-                        // }
+                // if (motor_get_current_draw(motor_lift_a) > 2000) // Default current limit is 2500 before the motor shuts down, we can override that if needed
+                // {
+                //         lift_force = 0; // prevent twisting shafts again hopefully
+                //         motor_set_zero_position(motor_lift_a, 0.1); // Check if maybe I want to protect the brain by reversing or something similar?
+                // }
 
-                        if (lift_force == 0)
-                        {
-                                motor_brake(motor_lift_a);
-                                motor_brake(motor_lift_b);
-                        } else {
-                                motor_move(motor_lift_a, lift_force);
-                                motor_move(motor_lift_b, lift_force);
-                        }
-                        delay(get_config_num("driver_lift_controller_delay_msec", 11));
+                if (lift_force == 0)
+                {
+                        motor_brake(motor_lift_a);
+                        motor_brake(motor_lift_b);
+                } else {
+                        motor_move(motor_lift_a, lift_force);
+                        motor_move(motor_lift_b, lift_force);
+                }
+                delay(11);
         } while (true);
 }

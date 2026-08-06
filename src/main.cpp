@@ -10,7 +10,6 @@ extern "C" {
 #include "dead_reckoning.h"
 #include "driver.h"
 #include "hardware.h"
-#include "ini_loader.h"
 #include "object.h"
 #include "tp_main.h"
 #include "vm.h"
@@ -34,9 +33,6 @@ static void home_claw(void) {
 }
 
 void initialize() {
-        printf("============================INIT============================\n");
-        printf("Initialisation period start...\n");
-
 #ifdef USE_INI_LOADER
         // Pull ini files
         get_config(); // TODO: Cache values to files
@@ -62,9 +58,6 @@ void initialize() {
         pros::screen::print(TEXT_MEDIUM, 0, "Initialised");
         pros::delay(500);
         pros::screen::erase();
-
-        printf("🕰️  Finished init.\n");
-        printf("------------------------------------------------------------\n\n");
 }
 
 void disabled() {
@@ -106,16 +99,9 @@ void delay_thrd(void* main_task_handle) {
 #endif
 
 void autonomous() {
-        printf("=========================AUTONOMOUS=========================\n");
-        printf("Autonomous period start:\n");
         pros::screen::print(pros::E_TEXT_MEDIUM, 0, "AUTON");
 
-
-        printf("Initialising autonomous sensors\n");
         pros::Task auton_sensor_task(auton_read_sensors, "AUTON SENSOR READ");
-
-
-        printf("Initialising dead reckoning\n");
         pros::Task dead_reckoning_task(dead_reckoning_position_tracker, "AUTON DEAD RECKON / POS TRACKER");
 
 #ifdef USE_TAIPAN
@@ -135,14 +121,14 @@ void autonomous() {
                 abort_auton.store(true);
 
                 while (!vm_cleanup_done.load()) {
-                        pros::delay(get_config_num("vm_cleanup_delay", 10)); // wait until vm is ready for completion
+                        pros::delay(10); // wait until vm is ready for completion
                 }
 
                 if (!atomic_load(&abort_auton))
                         printf("Script finished.\n");
-        } else {
-#endif
+                } else {
                 printf("No script found or compilation failed. Please review error logs.\n");
+#endif
 
                 printf("Running temporary auton\n");
                 pros::screen::print(pros::E_TEXT_MEDIUM, 1, "RUNNING TEMPORARY AUTON");
@@ -218,15 +204,10 @@ void autonomous() {
         printf("VM freed.\n");
 #endif
 
-        printf("Finished auton.\n");
-        printf("------------------------------------------------------------\n\n");
         opcontrol();
 }
 
 void opcontrol() {
-        printf("=========================OP CONTROL=========================\n");
-        printf("Driver control period start:\n");
-
         pros::Task driver_read_input_handler(driver_read_input, "DRIVER INPUT READ");
         pros::Task driver_apply_dt_input_handler(driver_apply_dt_input, "DRIVER DT CTRL");
         pros::Task driver_appliy_lift_input_handler(driver_apply_lift_input, "DRIVER LIFT CTRL");
@@ -235,7 +216,4 @@ void opcontrol() {
                 // Kill this thread
                 pros::delay(100);
         }
-
-        printf("Finished driver control period.\n");
-        printf("------------------------------------------------------------\n\n");
 }

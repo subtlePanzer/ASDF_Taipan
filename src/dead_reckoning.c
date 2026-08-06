@@ -5,13 +5,12 @@
 #include "api.h"
 #include "dead_reckoning.h"
 #include "hardware.h"
-#include "ini_loader.h"
 #include "math.h"
 
 lang_agn_atomic_int curr_x;
 lang_agn_atomic_int curr_y;
 
-#define DT_WHEEL_RAD get_config_num("DT_WHEEL_RADIUS", 3.25);
+#define DT_WHEEL_RAD 3.25;
 
 #define DT_WHEEL_CIRCUM M_PI * 2 * DT_WHEEL_RAD; // TODO: check
 
@@ -68,6 +67,6 @@ void dead_reckoning_position_tracker(void) {
 
                 last_d = d;
 
-                delay(get_config_num("dead_reckoning_delay_msec", 4));
+                delay(4);
         } while (true);
 }

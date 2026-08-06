@@ -3,7 +3,6 @@
 // -----------------------------------------------------------------------------
 
 #include "api.h"
-#include "ini_loader.h"
 #include "tp_loader.h"
 #include "memory.h"
 
@@ -43,7 +42,8 @@ auton_file_type auton_file_path(const char** out) {
         printf("🐍 SD Card found...\n");
 
         // check for bytecode
-        char* tp_path = get_config_str("dot_tp_file_path", "/usd/out.tp");
+        // char* tp_path = get_config_str("dot_tp_file_path", "/usd/out.tp");
+        char* tp_path = "/usd/out.tp";
         FILE* dot_tp_file = fopen(tp_path, "rb");
         if (dot_tp_file != NULL)
         {
@@ -54,7 +54,8 @@ auton_file_type auton_file_path(const char** out) {
         }
 
         // check for src
-        char* asdf_path = get_config_str("dot_asdf_file_path", "/usd/auton.asdf");
+        // char* asdf_path = get_config_str("dot_asdf_file_path", "/usd/auton.asdf");
+        char* asdf_path = "/usd/auton.asdf";
         FILE* dot_asdf_file = fopen(asdf_path, "r");
         if (dot_asdf_file != NULL)
         {

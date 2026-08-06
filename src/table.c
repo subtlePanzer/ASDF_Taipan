@@ -5,13 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ini_loader.h"
 #include "memory.h"
 #include "object.h"
 #include "table.h"
 #include "value.h"
 
-#define TABLE_MAX_LOAD get_config_num("hashtable_max_load_factor", 0.75) // Slow 🤮
+#define TABLE_MAX_LOAD 0.75
 
 void init_table(Table* table) {
         table->count = 0;

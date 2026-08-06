@@ -3,7 +3,6 @@
 // -----------------------------------------------------------------------------
 
 #include "hardware.h"
-#include "ini_loader.h"
 
 lang_agn_atomic_bool button_a_state;
 lang_agn_atomic_bool button_b_state;
@@ -25,6 +24,8 @@ lang_agn_atomic_int axis_right_x;
 lang_agn_atomic_int axis_right_y;
 
 lang_agn_atomic_int heading;
+
+static hardware robot_hardware;
 
 // float lift_control_factor = 0.85;
 // float lift_bias = -3.0;
@@ -61,9 +62,8 @@ motor_group_wrapper new_motor_group_wrapper(motor_group_wrapper* m, int8_t m1, i
         m->m3 = m3;
 }
 
-void set_motor_group_wrapper(motor_group_wrapper* group, int speed) { // Actually more memory efficient to pass the wrapper directly (3x8 = 24 bits vs 32/64 bits for a pointer)
-        printf("Ports passed: %d %d %d.\n", (int8_t)group->m1, (int8_t)group->m2, (int8_t)group->m3);
-        motor_move((int8_t)group->m1, speed);
-        motor_move((int8_t)group->m2, speed);
-        motor_move((int8_t)group->m3, speed);
+void set_motor_group_wrapper(motor_group_wrapper group, int speed) { // Actually more memory efficient to pass the wrapper directly (3x8 = 24 bits vs 32/64 bits for a pointer)
+        motor_move((int8_t)group.m1, speed);
+        motor_move((int8_t)group.m2, speed);
+        motor_move((int8_t)group.m3, speed);
 }
