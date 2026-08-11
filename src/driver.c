@@ -26,8 +26,8 @@ static bool isNoBumpersPressed(void) {
 }
 
 void temp_spin_dt(int left_power, int right_power) {
-        set_motor_group_wrapper(&robot_hardware.MOTORGROUP_L, left_power);
-        set_motor_group_wrapper(&robot_hardware.MOTORGROUP_L, right_power);
+        set_motor_group_wrapper(robot_hardware.MOTORGROUP_L, left_power);
+        set_motor_group_wrapper(robot_hardware.MOTORGROUP_L, right_power);
 
         // motor_move(motor_left_front, left_power);
         // motor_move(motor_left_mid, left_power);
@@ -75,7 +75,7 @@ static float clamp(float v, float minv, float maxv) {
 void driver_apply_dt_input() {
         do {
                 // Deadzones
-                int axis_h = clamp(atomic_load(&ct_status.axis_right_x) + atomic_load(&ct_status.axis_left_x), -127, 127);
+                int axis_h = clamp(atomic_load(&ct_status.axis_right_x) /* + atomic_load(&ct_status.axis_left_x) */, -127, 127);
 
                 int axis_v = atomic_load(&ct_status.axis_left_y);
 
@@ -95,8 +95,8 @@ void driver_apply_dt_input() {
                 motor_move(motor_right_mid, dt_right);
                 motor_move(motor_right_rear, dt_right);
 
-                // set_motor_group_wrapper(&robot_hardware.MOTORGROUP_L, dt_left);
-                // set_motor_group_wrapper(&robot_hardware.MOTORGROUP_R, dt_right);
+                // set_motor_group_wrapper(robot_hardware.MOTORGROUP_L, dt_left);
+                // set_motor_group_wrapper(robot_hardware.MOTORGROUP_R, dt_right);
 
                 delay(9);
         } while (true);
@@ -106,27 +106,42 @@ void driver_apply_lift_input() {
         motor_set_brake_mode(motor_lift_a, E_MOTOR_BRAKE_BRAKE);
         motor_set_brake_mode(motor_lift_b, E_MOTOR_BRAKE_BRAKE);
         motor_set_brake_mode(motor_claw, E_MOTOR_BRAKE_HOLD);
+        motor_set_encoder_units(motor_claw, E_MOTOR_ENCODER_ROTATIONS);
         adi_port_set_config(1, E_ADI_DIGITAL_IN);
+
         float lift_control_factor = 0.85;
         float lift_bias = -3.0;
         float lift_delay = 0.0;
         bool claw_open = false;
+
         do {
                 int lift_force = (int)(lift_control_factor * -(float)atomic_load(&ct_status.axis_right_y) + lift_bias);
 
                 if (adi_digital_read(1) && lift_force <= 0)
                         lift_force = 0;
 
-                if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1) && !is_claw_open) {
-                        motor_move_absolute(motor_claw, claw_rest_pos + claw_width_delta, 100.0);
-                        is_claw_open = true;
-                } else if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2) && is_claw_open) {
-                        motor_move_absolute(motor_claw, claw_rest_pos - 0.1, 100.0);
-                        is_claw_open = false;
-                } else
-                        motor_move(motor_claw, 0.0);
+                if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1) && !is_claw_open)
+                        printf("Should open? %d\n", controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1) && !is_claw_open);
+                if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2) && is_claw_open)
+                        printf("Should close? %d\n", controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2) && is_claw_open);
 
-                printf("Claw state: %i\n", claw_open);
+                if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1) && is_claw_open) {
+                        motor_move_absolute(motor_claw, claw_rest_pos + 0.2, 100.0);
+                        while (!((motor_get_position(motor_claw) < (claw_rest_pos + 0.3)) && (motor_get_position(motor_claw) > (claw_rest_pos + 0.1))))
+                                delay(2); // This needs it's own thread because it's blocking
+
+                        is_claw_open = false;
+                } else if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2) && !is_claw_open) {
+                        motor_move_absolute(motor_claw, claw_rest_pos + claw_width_delta, 100.0);
+
+                        // while (!((motor_get_position(motor_claw) < (claw_rest_pos - 0.1 + 0.5)) && (motor_get_position(motor_claw) > (claw_rest_pos - 0.1 - 0.5))))
+                        //         delay(2); // This needs it's own thread because it's blocking
+
+                        is_claw_open = true;
+                } /*else
+                        motor_move(motor_claw, 0.0);
+*/
+                // printf("Claw state: %i\n", claw_open);
 
                 lift_delay -= (11.0 / 1000.0);
 

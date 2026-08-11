@@ -50,19 +50,21 @@ typedef enum {
 } dt_motors;
 
 typedef enum {
-        motor_left_front = -13,
-        motor_left_mid = 14,
-        motor_left_rear = -15,
+        motor_left_front = -11,
+        motor_left_mid = 12,
+        motor_left_rear = -13,
 
-        motor_right_front = 16,
-        motor_right_mid = -17,
+        motor_right_front = 20,
+        motor_right_mid = -19,
         motor_right_rear = 18,
 
-        motor_lift_a = 1,
+        motor_lift_a = 1, // right
         motor_lift_b = -10,
-        motor_claw = 9,
+        motor_claw = 8,
 
         imu_port = 7,
+        odom_para = 17,
+        odom_perp = 9,
 } standard_ports;
 
 static const int8_t DT_MOTOR_PORTS[DT_MOTOR_C] = {
@@ -103,7 +105,8 @@ extern hardware robot_hardware;
 
 void init_hardware();
 motor_group_wrapper new_motor_group_wrapper(motor_group_wrapper* m, int8_t m1, int8_t m2, int8_t m3);
-void set_motor_group_wrapper(motor_group_wrapper* group, int speed);
+void set_motor_group_wrapper(motor_group_wrapper group, int speed);
 
+void calibrate_imu(void);
 
 #endif

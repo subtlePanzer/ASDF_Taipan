@@ -48,7 +48,7 @@ double get_config_num(char* key, double fallback) {
 }
 
 static char* load_ini_file(void) {
-        if (!!!usd_is_installed())
+        if (!usd_is_installed())
                 return NULL;
 
         FILE* f = fopen("config.ini", "r");

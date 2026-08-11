@@ -1,11 +1,10 @@
-#include "sensor_system.cpp"
+#pragma once
+
+#include "sensor_system.hpp"
 #include <inttypes.h>
 
 #include "api.h"
-
-static double get_head() {
-
-}
+#include "hardware.h"
 
 class straight_odom_2_wheel : public sensor_sys { // Make an arc_odom
 public:
@@ -21,7 +20,7 @@ public:
                 double a_travel = a_rots * tracking_wheel_circ;
                 double b_travel = b_rots * tracking_wheel_circ;
 
-                double theta = get_head(); // global heading
+                double theta = heading.load(); // global heading
                 double cx = a_travel * cos(theta) - b_travel * sin(theta);
                 double cy = a_travel * sin(theta) - b_travel * cos(theta);
 

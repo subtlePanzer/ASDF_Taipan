@@ -25,7 +25,7 @@ lang_agn_atomic_int axis_right_y;
 
 lang_agn_atomic_int heading;
 
-static hardware robot_hardware;
+hardware robot_hardware;
 
 // float lift_control_factor = 0.85;
 // float lift_bias = -3.0;
@@ -54,6 +54,23 @@ void init_hardware() {
         atomic_init(&axis_right_x, 0);
         atomic_init(&axis_left_y, 0);
         atomic_init(&axis_right_y, 0);
+}
+
+void calibrate_imu() {
+        imu_reset(imu_port);
+        int time = millis();
+        int iter = 0;
+
+        while (imu_get_status(imu_port) & E_IMU_STATUS_CALIBRATING) {
+                screen_print(E_TEXT_MEDIUM, 0, "Calibrating... %d\n", iter);
+                iter += 10;
+                delay(10);
+        }
+
+        imu_tare_heading(imu_port);
+        imu_tare_yaw(imu_port);
+
+        screen_print(E_TEXT_MEDIUM, 1, "IMU is done calibrating (%d ms)\n", iter - time);
 }
 
 motor_group_wrapper new_motor_group_wrapper(motor_group_wrapper* m, int8_t m1, int8_t m2, int8_t m3) {

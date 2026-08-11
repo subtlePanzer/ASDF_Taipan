@@ -1,13 +1,16 @@
+#pragma once
+
 #include "auton.h"
 #include <atomic>
+#include "IPositionable.hpp"
 
-class sensor_sys {
+class sensor_sys : public IPositionable {
 public:
         virtual ~sensor_sys() = default;
 
         virtual void calc_position() = 0;
 
-        vec2 get_position() const {
+        vec2 get_position() override {
                 return vec2(x.load(), y.load());
         }
 

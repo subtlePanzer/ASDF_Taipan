@@ -1,12 +1,14 @@
-#include "sensor_system.cpp"
+#include "IPositionable.hpp"
+#include "sensor_system.hpp"
 #include <vector>
 
-class localiser { // eg moving average, etc
+class localiser : public IPositionable { // eg moving average, etc
 public:
         virtual ~localiser() = default;
 
         virtual void update_pos_estimates() = 0;
-        virtual vec2 get_position() const {
+
+        vec2 get_position() override {
                 return vec2(x.load(), y.load());
         }
 
