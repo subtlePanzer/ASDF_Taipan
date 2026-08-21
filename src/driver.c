@@ -10,11 +10,19 @@
 
 controller_status ct_status;
 
-int claw_rest_pos;
+double claw_rest_pos = 0;
 bool is_claw_open = false;
 
 void save_claw_pos(void) {
         claw_rest_pos = motor_get_position(motor_claw);
+
+        if (claw_rest_pos == PROS_ERR_F) {
+                printf("Saving the claw position failed, aborting...\n");
+                printf("Error: %s", errno);
+                exit(1);
+        } else
+                printf("Claw rest pos: %d\n", claw_rest_pos);
+
         is_claw_open = false;
 }
 
@@ -73,13 +81,14 @@ static float clamp(float v, float minv, float maxv) {
 }
 
 void driver_apply_dt_input() {
+        double steering_coeff = 0.85;
         do {
                 // Deadzones
-                int axis_h = clamp(atomic_load(&ct_status.axis_right_x) /* + atomic_load(&ct_status.axis_left_x) */, -127, 127);
+                int axis_h = clamp(atomic_load(&ct_status.axis_right_x) * steering_coeff /* + atomic_load(&ct_status.axis_left_x) */, -127, 127);
 
                 int axis_v = atomic_load(&ct_status.axis_left_y);
 
-
+\
                 if (abs(axis_h) < stick_deadzone_factor) axis_h = 0;
                 if (abs(axis_v) < stick_deadzone_factor) axis_v = 0;
 
@@ -105,13 +114,16 @@ void driver_apply_dt_input() {
 void driver_apply_lift_input() {
         motor_set_brake_mode(motor_lift_a, E_MOTOR_BRAKE_BRAKE);
         motor_set_brake_mode(motor_lift_b, E_MOTOR_BRAKE_BRAKE);
-        motor_set_brake_mode(motor_claw, E_MOTOR_BRAKE_HOLD);
+        motor_set_brake_mode(motor_claw, E_MOTOR_BRAKE_COAST);
         motor_set_encoder_units(motor_claw, E_MOTOR_ENCODER_ROTATIONS);
         adi_port_set_config(1, E_ADI_DIGITAL_IN);
 
         float lift_control_factor = 0.85;
         float lift_bias = -3.0;
         float lift_delay = 0.0;
+
+        float claw_accuracy = 0.05;
+        float claw_passive_grab_power = 20.0;
         bool claw_open = false;
 
         do {
@@ -120,28 +132,37 @@ void driver_apply_lift_input() {
                 if (adi_digital_read(1) && lift_force <= 0)
                         lift_force = 0;
 
-                if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1) && !is_claw_open)
-                        printf("Should open? %d\n", controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1) && !is_claw_open);
-                if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2) && is_claw_open)
-                        printf("Should close? %d\n", controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2) && is_claw_open);
+                // if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1) && !is_claw_open)
+                //         printf("Should open? %d\n", controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1) && !is_claw_open);
+                // if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2) && is_claw_open)
+                //         printf("Should close? %d\n", controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2) && is_claw_open);
 
-                if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1) && is_claw_open) {
-                        motor_move_absolute(motor_claw, claw_rest_pos + 0.2, 100.0);
-                        while (!((motor_get_position(motor_claw) < (claw_rest_pos + 0.3)) && (motor_get_position(motor_claw) > (claw_rest_pos + 0.1))))
-                                delay(2); // This needs it's own thread because it's blocking
+                // printf("Current: %d\n", motor_get_current_draw(motor_claw));
 
-                        is_claw_open = false;
-                } else if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2) && !is_claw_open) {
-                        motor_move_absolute(motor_claw, claw_rest_pos + claw_width_delta, 100.0);
+                // if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1) && !is_claw_open) {
+                //         motor_move_absolute(motor_claw, claw_rest_pos, 127.0);
+                //         while (!((motor_get_position(motor_claw) < (claw_rest_pos + claw_accuracy)) && (motor_get_position(motor_claw) > (claw_rest_pos - claw_accuracy))))
+                //                 delay(2); // This needs it's own thread because it's blocking
 
-                        // while (!((motor_get_position(motor_claw) < (claw_rest_pos - 0.1 + 0.5)) && (motor_get_position(motor_claw) > (claw_rest_pos - 0.1 - 0.5))))
-                        //         delay(2); // This needs it's own thread because it's blocking
+                //         is_claw_open = true;
+                //         motor_move(motor_claw, claw_passive_grab_power);
+                //         // motor_move(motor_claw, 0);
+                // } else if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2) && is_claw_open) {
+                //         motor_move_absolute(motor_claw, claw_rest_pos + claw_width_delta, 127.0);
 
-                        is_claw_open = true;
-                } /*else
-                        motor_move(motor_claw, 0.0);
-*/
-                // printf("Claw state: %i\n", claw_open);
+                //         while (!((motor_get_position(motor_claw) < (claw_rest_pos + claw_width_delta + claw_accuracy)) && (motor_get_position(motor_claw) > (claw_rest_pos + claw_width_delta - claw_accuracy))))
+                //                 delay(2); // This needs it's own thread because it's blocking
+
+                //         is_claw_open = false;
+                //         motor_move(motor_claw, 0);
+                // }
+
+                if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1))
+                motor_move(motor_claw, 127.0);
+        else if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R2))
+                motor_move(motor_claw, -127.0);
+        else
+                motor_move(motor_claw, 0.0);
 
                 lift_delay -= (11.0 / 1000.0);
 

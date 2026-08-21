@@ -32,7 +32,7 @@ typedef struct {
         lang_agn_atomic_int axis_right_y;
 } controller_status;
 
-extern lang_agn_atomic_int heading;
+extern lang_agn_atomic_double heading;
 
 // extern float lift_control_factor;
 // extern float lift_bias;
@@ -62,7 +62,7 @@ typedef enum {
         motor_lift_b = -10,
         motor_claw = 8,
 
-        imu_port = 7,
+        imu_port = 15,
         odom_para = 17,
         odom_perp = 9,
 } standard_ports;

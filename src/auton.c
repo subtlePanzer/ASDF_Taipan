@@ -76,11 +76,3 @@
 //                 last_dist = dist;
 //         } while (fabs(dist) > dz);
 // }
-
-void auton_read_sensors() {
-        do {
-                atomic_store(&heading, imu_get_yaw(imu_port));
-
-                delay(10); // could even be lower?
-        } while (true);
-}

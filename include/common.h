@@ -28,10 +28,12 @@
 #include <atomic>
 typedef std::atomic_bool lang_agn_atomic_bool;
 typedef std::atomic_int lang_agn_atomic_int;
+typedef std::atomic<double> lang_agn_atomic_double;
 #else
 #include <stdatomic.h>
 typedef atomic_bool lang_agn_atomic_bool;
 typedef atomic_int lang_agn_atomic_int;
+typedef _Atomic(double) lang_agn_atomic_double;
 #endif
 
 #endif // tp_common_h

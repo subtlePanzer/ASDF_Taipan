@@ -1,11 +1,12 @@
 #pragma once
 
-#include "auton.h"
 #include <atomic>
 #include "IPositionable.hpp"
-#include "hardware.h"
+
 extern "C" {
-#include "_math.h"
+        #include "auton.h"
+        #include "_math.h"
+        #include "hardware.h"
 };
 
 class navigator {

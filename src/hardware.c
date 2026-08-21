@@ -23,7 +23,7 @@ lang_agn_atomic_int axis_left_y;
 lang_agn_atomic_int axis_right_x;
 lang_agn_atomic_int axis_right_y;
 
-lang_agn_atomic_int heading;
+lang_agn_atomic_double heading;
 
 hardware robot_hardware;
 
@@ -54,6 +54,9 @@ void init_hardware() {
         atomic_init(&axis_right_x, 0);
         atomic_init(&axis_left_y, 0);
         atomic_init(&axis_right_y, 0);
+
+        motor_set_encoder_units(motor_claw, E_MOTOR_ENCODER_ROTATIONS);
+        motor_set_zero_position(motor_claw, 0);
 }
 
 void calibrate_imu() {
@@ -67,8 +70,7 @@ void calibrate_imu() {
                 delay(10);
         }
 
-        imu_tare_heading(imu_port);
-        imu_tare_yaw(imu_port);
+        imu_tare_pitch(imu_port);
 
         screen_print(E_TEXT_MEDIUM, 1, "IMU is done calibrating (%d ms)\n", iter - time);
 }

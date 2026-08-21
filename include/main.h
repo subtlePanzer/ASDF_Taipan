@@ -65,8 +65,9 @@ extern "C" {
         lang_agn_atomic_bool abort_auton;
         lang_agn_atomic_bool vm_cleanup_done;
 
-        #define HARDWARE_BUILD // NOT IMPLEMENTED | build for the vex brain, not my computer
+        #define HARDWARE_BUILD // NOT IMPLEMENTED | build for the vex brain, if off then build for my computer
         // #define USE_TAIPAN
         // #define USE_INI_LOADER
+        #define SAVE_ODOM_TRACK
 
 #endif  // _PROS_MAIN_H_
