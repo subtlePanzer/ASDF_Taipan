@@ -18,7 +18,7 @@ static float shd(float h1, float h2) { // signed heading difference
 }
 
 static float argd(vec2 v) {
-        return atan2(v.y, v.x) * RAD2DEG;
+        return atan(v.x / v.y) * RAD2DEG;
 }
 
 static float clamp(float v, float minv, float maxv) {

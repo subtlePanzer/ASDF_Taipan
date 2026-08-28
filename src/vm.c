@@ -132,7 +132,7 @@ static Value auto_p2p_native(int argc, Value* argv) {
                 target.x = argv->as.number;
                 target.y = (argv + 1)->as.number;
 
-                auton_point_to_point(target);
+                // auton_point_to_point(target);
                 return BOOL_VAL(true);
         }
         runtime_error("Wrong argument types passed to function 'auto_p2p'.\n");
@@ -499,13 +499,14 @@ static InterpretResult run(void* abort_flag, void* main_handle, void* vm_clean) 
                                 push(BOOL_VAL(is_falsey(pop())));
                                 break;
                                 //                        case OP_NEGATE:   *vm.stack_top = -(*(vm.stack_top - 1)); break; // optimised to negate in place, could be push(-pop())
-                        case OP_NEGATE:
+                        case OP_NEGATE: {
                                 if (!IS_NUMBER(peek(0))) {
                                         runtime_error("Operand must be a number.");
                                         return INTERPRET_RUNTIME_ERROR;
                                 }
-                                push(NUMBER_VAL(-AS_NUMBER(pop())));
+                                // push(NUMBER_VAL(-AS_NUMBER(pop())));
                                 break;
+                        }
                         case OP_PRINT_CLI: {
                                 print_value(pop());
                                 printf("\n");
@@ -587,11 +588,12 @@ static InterpretResult run(void* abort_flag, void* main_handle, void* vm_clean) 
                                 }
                                 break;
                         }
-                        case OP_CLOSE_UPVALUE:
+                        case OP_CLOSE_UPVALUE: {
                                 close_upvalues(vm.stack_top - 1);
                                 pop();
                                 break;
-                        case rOP_DT_SPIN:
+                        }
+                        case rOP_DT_SPIN: {
                                 if (!IS_NUMBER(peek(0))) runtime_error("Drivetrain power must be a number.");
                                 int power = AS_NUMBER(pop());
 
@@ -602,7 +604,8 @@ static InterpretResult run(void* abort_flag, void* main_handle, void* vm_clean) 
                                 motor_move(motor_right_mid, power);
                                 motor_move(motor_right_rear, power);
                                 break;
-                        case rOP_DT_TURN:
+                        }
+                        case rOP_DT_TURN: {
                                 if (!IS_NUMBER(peek(0))) runtime_error("Drivetrain turn power must be a number.");
                                 int turn_diff = 0.5 * AS_NUMBER(pop());
 
@@ -613,6 +616,7 @@ static InterpretResult run(void* abort_flag, void* main_handle, void* vm_clean) 
                                 motor_move(motor_right_mid, -turn_diff);
                                 motor_move(motor_right_rear, -turn_diff);
                                 break;
+                        }
                         case rOP_MOTOR_SPIN:
                                 Value mpower = pop();
                                 Value port = pop();
@@ -623,8 +627,9 @@ static InterpretResult run(void* abort_flag, void* main_handle, void* vm_clean) 
 
                                 motor_move(AS_PORT(port), AS_NUMBER(mpower));
                                 break;
-                        case rOP_MOTOR_GROUP_SPIN:
+                        case rOP_MOTOR_GROUP_SPIN: {
                                 break; // TODO:
+                        }
                         case OP_RETURN: {
                                 // Exit interpreter;
                                 Value result = pop();

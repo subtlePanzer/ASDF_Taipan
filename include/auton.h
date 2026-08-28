@@ -10,6 +10,6 @@ typedef struct {
         float y;
 } vec2;
 
-void auton_point_to_point(vec2 target);
-void auton_read_sensors();
+// void auton_point_to_point(vec2 target);
+// void auton_read_sensors();
 #endif

@@ -70,4 +70,6 @@ extern "C" {
         // #define USE_INI_LOADER
         #define SAVE_ODOM_TRACK
 
+        //#define SKILLS
+
 #endif  // _PROS_MAIN_H_
