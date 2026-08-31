@@ -10,12 +10,12 @@
 template <typename internal_type, typename conversion_factor = std::ratio<1>>
 class length_value {
 public:
-        length_value(void) {
+        constexpr length_value(void) {
                 internal = 0;
                 this_ratio = conversion_factor::num / conversion_factor::den;
         }
 
-        length_value(internal_type v) : internal(v) {
+        constexpr length_value(internal_type v) : internal(v) {
                 this_ratio = conversion_factor::num / conversion_factor::den;
         }
 
@@ -26,19 +26,19 @@ public:
                 internal = l.internal() * other_ratio / this_ratio;
         };
 
-        operator internal_type() const {
+        constexpr operator internal_type() const {
                 return (internal_type)internal;
         }
 
-        internal_type internal() const {
+        constexpr internal_type internal() const {
                 return internal;
         }
 
-        length_value operator+(const length_value& l) const {
+        constexpr length_value operator+(const length_value& l) const {
                 return length_value(internal + l.internal);
         }
 
-        length_value operator-(const length_value& l) const {
+        constexpr length_value operator-(const length_value& l) const {
                 return length_value(internal - l.internal);
         }
 
