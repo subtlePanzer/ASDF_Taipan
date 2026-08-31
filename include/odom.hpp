@@ -36,7 +36,15 @@ public:
                 last_s = s;
                 last_r = r;
 
-                double theta = heading.load() * (M_PI / 180.0);
+                double h = heading.load();
+                if (h == INFINITY)
+                {
+                        printf("Heading not valid.\n");
+                        return;
+                }
+
+                double theta = h * (M_PI / 180.0);
+
                 double dtheta = theta - last_theta;
 
                 last_theta = theta;
