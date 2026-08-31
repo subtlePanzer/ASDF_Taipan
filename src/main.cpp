@@ -24,10 +24,10 @@ extern "C" {
 #include <fstream>
 #include <functional>
 
-tracking_wheel lat_wheel = tracking_wheel(odom_perp, (in)2.0, 0.0); // TODO: check
-tracking_wheel para_wheel = tracking_wheel(odom_para, (in)2.0, 0.0);
+tracking_wheel lat_wheel = tracking_wheel(odom_perp, 2.0_in, 0.0_mm); // TODO: check offsets
+tracking_wheel para_wheel = tracking_wheel(odom_para, 2.0_in, 0.0_mm);
 
-straight_odom_2_wheel odom_sys(lat_wheel, para_wheel /*, 2 * 25.4 * M_PI */);
+straight_odom_2_wheel odom_sys(lat_wheel, para_wheel);
 
 #ifdef USE_TAIPAN
 run_script_params* params;
@@ -330,11 +330,11 @@ void autonomous() {
                 pros::delay(300);
                 temp_c_spin_motor(motor_lift_a, -80);
                 temp_c_spin_motor(motor_lift_b, -80);
-                #ifndef short_auto
+#ifndef short_auto
                 temp_spin_dt(100, 0);
-                #else
+#else
                 temp_spin_dt(0, 100);
-                #endif
+#endif
                 pros::delay(850);
                 temp_spin_dt(60, 60);
                 pros::delay(800);
@@ -351,7 +351,7 @@ void autonomous() {
                 pros::delay(500);
                 temp_spin_dt(-100, -100);
                 pros::delay(500);
-        #ifndef short_auto
+#ifndef short_auto
                 temp_spin_dt(-100, 100);
                 // turn towards pin+cup stack
                 pros::delay(250);
@@ -378,7 +378,7 @@ void autonomous() {
                 pros::delay(1300);
                 temp_c_spin_motor(motor_claw, -100);
                 pros::delay(200);
-        #endif
+#endif
 #ifdef SKILLS
                 temp_spin_dt(-100, -100);
                 pros::delay(200);

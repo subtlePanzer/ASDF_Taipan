@@ -20,7 +20,7 @@ public:
         }
 
         template <typename other_ratio>
-        value(const length<internal_type, ratio>& l) {
+        value(const length<internal_type, other_ratio>& l) {
                 double other_ratio = (double)other_ratio::num / (double)other_ratio::den;
 
                 internal = l.internal() * other_ratio / this_ratio;
@@ -71,7 +71,46 @@ using msec = time<std::ratio<1>>; // msec is base, as above
 using rad = angle<std::ratio<1>>; // #radian_primacy
 using deg = angle<std::ratio<57296, 1000>>;
 using cdeg = angle<std::ratio<57296, 10000>>;
+using rot = angle<std::ratio<628318, 100000>>;
 
-// TODO: add custom literals
+// based on https://en.cppreference.com/cpp/language/user_literal
+mm operator"" _mm(long double val) {
+        return mm((double)val);
+}
 
+meters operator"" _m(long double val) {
+        return meters((double)val);
+}
+
+in operator"" _in(long double val) {
+        return in((double)val);
+}
+
+ft operator"" _ft(long double val) {
+        return ft((double)val);
+}
+
+sec operator"" _sec(long double val) {
+        return sec((double)val);
+}
+
+msec operator"" _msec(long double val) {
+        return msec((double)val);
+}
+
+rad operator"" _rads(long double val) {
+        return rad((double)val);
+}
+
+deg operator"" _deg(long double val) {
+        return deg((double)val);
+}
+
+cdeg operator"" _cdeg(long double val) {
+        return cdeg((double)val);
+}
+
+rot operator"" _rots(long double val) {
+        return rot((double)val);
+}
 #endif
