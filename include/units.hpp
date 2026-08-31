@@ -23,7 +23,7 @@ public:
         value(const value<type, internal_type, other_ratio>& l) {
                 double ratio_double = (double)other_ratio::num / (double)other_ratio::den;
 
-                _internal = l._internal() * ratio_double / this_ratio;
+                _internal = l.internal() * ratio_double / this_ratio;
         };
 
         constexpr operator internal_type() const {

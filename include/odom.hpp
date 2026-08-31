@@ -75,7 +75,7 @@ public:
                         return;
                 }
 
-                rad theta = (rad)h;
+                rad theta = h;
 
                 rad dtheta = theta - last_theta;
 
