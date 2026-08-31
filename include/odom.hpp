@@ -20,9 +20,9 @@ extern "C" {
 #define cD2rots 2.777778E-5
 
 
-template<typename radius_unit = mm, typename offset_unit = mm>
 class tracking_wheel {
 public:
+        template<typename radius_unit = mm, typename offset_unit = mm>
         tracking_wheel(int8_t port, radius_unit radius, offset_unit offset) 
         : offset(offset) { 
                 wheel = std::make_unique<pros::Rotation>(port);
@@ -51,7 +51,7 @@ private:
         std::unique_ptr<pros::Rotation> wheel;
         cdeg last_p;
         mm circ;
-        offset_unit offset;
+        mm offset;
 };
 
 class straight_odom_2_wheel : public sensor_sys { // Make an arc_odom
