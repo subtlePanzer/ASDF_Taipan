@@ -24,7 +24,10 @@ extern "C" {
 #include <fstream>
 #include <functional>
 
-straight_odom_2_wheel odom_sys(odom_perp, odom_para /*, 2 * 25.4 * M_PI */);
+tracking_wheel lat_wheel = tracking_wheel(odom_perp, 100.0, 0.0); // TODO: check
+tracking_wheel para_wheel = tracking_wheel(odom_para, 100.0, 0.0);
+
+straight_odom_2_wheel odom_sys(lat_wheel, para_wheel /*, 2 * 25.4 * M_PI */);
 
 #ifdef USE_TAIPAN
 run_script_params* params;

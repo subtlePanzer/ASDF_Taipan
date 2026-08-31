@@ -8,6 +8,7 @@
 #include "sensor_system.hpp"
 
 #include <inttypes.h>
+#include <memory>
 
 extern "C" {
 #include "api.h"
@@ -17,24 +18,46 @@ extern "C" {
 // #define cD2rots (1.0 / 36000.0)
 #define cD2rots 2.777778E-5
 
+
+class tracking_wheel {
+public:
+        tracking_wheel(int8_t port, double radius_mm, double offset) 
+        : offset(offset) { 
+                wheel = std::make_unique<pros::Rotation>(port);
+                wheel->set_position(0);
+
+                circ = M_PI * radius_mm * radius_mm;
+        }
+
+        ~tracking_wheel() {};
+
+        double get_delta() { // Returns mm
+                double pos = (double)wheel->get_position(); // assuming rot is in cDeg
+                double raw_delta = pos - last_p;
+                last_p = pos;
+
+                return raw_delta * cD2rots * circ; // mm
+        }
+
+private:
+        std::unique_ptr<pros::Rotation> wheel;
+        double last_p;
+        double circ;
+        double offset;
+};
+
 class straight_odom_2_wheel : public sensor_sys { // Make an arc_odom
 public:
-        straight_odom_2_wheel(int8_t lateral_wheel, int8_t parallel_wheel/*, int twc*/) : lat_wheel(lateral_wheel), para_wheel(parallel_wheel) /*, tracking_wheel_circ(twc) */ {
+        straight_odom_2_wheel(tracking_wheel& lateral_wheel, tracking_wheel& parallel_wheel/*, int twc*/) /*, tracking_wheel_circ(twc) */ {
                 x.store(0);
                 y.store(0);
-                para_wheel.set_position(0);
-                lat_wheel.set_position(0);
+                lat_wheel = &lateral_wheel;
+                para_wheel = &parallel_wheel;
         };
 
         void calc_position() override {
-                double s = -lat_wheel.get_position();
-                double r = -para_wheel.get_position();
-
-                double ds = (s - last_s) * cD2rots * tracking_wheel_circ;
-                double dr = (r - last_r) * cD2rots * tracking_wheel_circ;
-
-                last_s = s;
-                last_r = r;
+                double ds = lat_wheel->get_delta();
+                double dr = para_wheel->get_delta();
 
                 double h = heading.load();
                 if (h == INFINITY)
@@ -70,8 +93,8 @@ public:
         }
 
 private:
-        pros::Rotation lat_wheel;
-        pros::Rotation para_wheel;
+        tracking_wheel* lat_wheel;
+        tracking_wheel* para_wheel;
 
         double last_s = 0;
         double last_r = 0;
