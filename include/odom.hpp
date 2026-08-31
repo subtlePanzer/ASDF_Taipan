@@ -91,7 +91,7 @@ public:
                         ddly = 2 * std::sin(dtheta / 2) * ((dr / (dtheta)) + para_wheel->get_offset<mm>());
                 }
 
-                rad thetam = last_theta + (dtheta / 2);
+                rad thetam = last_theta + (rad)(dtheta / 2);
 
                 // rotate by -thetam to get to global position space
                 mm ddx = ddlx * std::cos(thetam) - ddly * std::sin(thetam);
