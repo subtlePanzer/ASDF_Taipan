@@ -6,6 +6,7 @@
 #define ODOM_H
 
 #include "sensor_system.hpp"
+#include "units.hpp"
 
 #include <inttypes.h>
 #include <memory>
@@ -19,74 +20,82 @@ extern "C" {
 #define cD2rots 2.777778E-5
 
 
+template<typename radius_unit = mm, typename offset_unit = mm>
 class tracking_wheel {
 public:
-        tracking_wheel(int8_t port, double radius_mm, double offset) 
+        tracking_wheel(int8_t port, radius_unit radius, offset_unit offset) 
         : offset(offset) { 
                 wheel = std::make_unique<pros::Rotation>(port);
                 wheel->set_position(0);
 
-                circ = M_PI * radius_mm * radius_mm;
+                circ = M_PI * radius * radius;
         }
 
         ~tracking_wheel() {};
 
-        double get_delta() { // Returns mm
-                double pos = (double)wheel->get_position(); // assuming rot is in cDeg
-                double raw_delta = pos - last_p;
+        template<typename T = mm>
+        T get_delta() {
+                cdeg pos = wheel->get_position();
+                cdeg raw_delta = pos - last_p;
                 last_p = pos;
 
-                return raw_delta * cD2rots * circ; // mm
+                return (T)(raw_delta * cD2rots * circ);
+        }
+
+        template<typename T = mm>
+        T get_offset() {
+                return offset;
         }
 
 private:
         std::unique_ptr<pros::Rotation> wheel;
-        double last_p;
-        double circ;
-        double offset;
+        cdeg last_p;
+        mm circ;
+        offset_unit offset;
 };
 
 class straight_odom_2_wheel : public sensor_sys { // Make an arc_odom
 public:
-        straight_odom_2_wheel(tracking_wheel& lateral_wheel, tracking_wheel& parallel_wheel/*, int twc*/) /*, tracking_wheel_circ(twc) */ {
+        straight_odom_2_wheel(tracking_wheel& lateral_wheel, tracking_wheel& parallel_wheel) {
                 x.store(0);
                 y.store(0);
+
                 lat_wheel = &lateral_wheel;
                 para_wheel = &parallel_wheel;
         };
 
         void calc_position() override {
-                double ds = lat_wheel->get_delta();
-                double dr = para_wheel->get_delta();
+                mm ds = lat_wheel->get_delta();
+                mm dr = para_wheel->get_delta();
 
-                double h = heading.load();
+                deg h = heading.load();
                 if (h == INFINITY)
                 {
                         printf("Heading not valid.\n");
                         return;
                 }
 
-                double theta = h * (M_PI / 180.0);
+                rad theta = (rad)h;
 
-                double dtheta = theta - last_theta;
+                rad dtheta = theta - last_theta;
 
                 last_theta = theta;
 
-                double ddlx;
-                double ddly;
+                mm ddlx;
+                mm ddly;
                 if (abs(dtheta) <= 0) {
                         ddlx = ds;
                         ddly = dr;
                 } else {
-                        ddlx = 2 * sin(dtheta / 2) * ((ds / (dtheta * (1 / RAD2DEG))) + offset_s);
-                        ddly = 2 * sin(dtheta / 2) * ((dr / (dtheta * (1 / RAD2DEG))) + offset_r);
+                        ddlx = 2 * std::sin(dtheta / 2) * ((ds / (dtheta)) + lat_wheel->get_offset<mm>());
+                        ddly = 2 * std::sin(dtheta / 2) * ((dr / (dtheta)) + para_wheel->get_offset<mm>());
                 }
 
-                double thetam = last_theta + (dtheta / 2);
+                rad thetam = last_theta + (dtheta / 2);
 
-                // rotate by -thetam
-                double ddx = ddlx * cos(thetam * (1 / RAD2DEG)) - ddly * sin(thetam * (1 / RAD2DEG));
-                double ddy = ddlx * sin(thetam * (1 / RAD2DEG)) + ddly * cos(thetam * (1 / RAD2DEG));
+                // rotate by -thetam to get to global position space
+                mm ddx = ddlx * std::cos(thetam) - ddly * std::sin(thetam);
+                mm ddy = ddlx * std::sin(thetam) + ddly * std::cos(thetam);
 
                 x.store(x.load() + ddx);
                 y.store(y.load() + ddy);
@@ -96,18 +105,12 @@ private:
         tracking_wheel* lat_wheel;
         tracking_wheel* para_wheel;
 
-        double last_s = 0;
-        double last_r = 0;
-        double last_theta = 0;
+        mm last_s = 0;
+        mm last_r = 0;
+        rad last_theta = 0;
 
-        double start_s = 0;
-        double start_r = 0;
-        double start_theta = 0;
-
-        double offset_s = -60.0;
-        double offset_r = -10.0;
-
-        double tracking_wheel_circ = 159.5;
+        mm offset_s = -60.0;
+        mm offset_r = -10.0;
 };
 
 #endif

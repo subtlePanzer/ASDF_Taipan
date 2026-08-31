@@ -24,8 +24,8 @@ extern "C" {
 #include <fstream>
 #include <functional>
 
-tracking_wheel lat_wheel = tracking_wheel(odom_perp, 100.0, 0.0); // TODO: check
-tracking_wheel para_wheel = tracking_wheel(odom_para, 100.0, 0.0);
+tracking_wheel lat_wheel = tracking_wheel<in, mm>(odom_perp, 2.0, 0.0); // TODO: check
+tracking_wheel para_wheel = tracking_wheel<in, mm>(odom_para, 2.0, 0.0);
 
 straight_odom_2_wheel odom_sys(lat_wheel, para_wheel /*, 2 * 25.4 * M_PI */);
 
