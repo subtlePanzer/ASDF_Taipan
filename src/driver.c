@@ -74,7 +74,7 @@ static float clamp(float v, float minv, float maxv) {
 
 // A pretty simple single-stick arcade drive control homebrewed by our team
 void driver_apply_dt_input() {
-        double steering_coeff = 0.70;
+        double steering_coeff = 0.55;
 
         do {
                 // Deadzones
@@ -86,15 +86,21 @@ void driver_apply_dt_input() {
                 if (abs(axis_h) < stick_deadzone_factor) axis_h = 0;
                 if (abs(axis_v) < stick_deadzone_factor) axis_v = 0;
 
-#ifdef USE_CURVES
                 float axis_h_raw = axis_h / 127.0f;
                 float axis_v_raw = axis_v / 127.0f;
 
+#ifdef USE_CURVES
                 axis_v = 127.0f * ease_in_cubic_boosted(axis_v_raw, 0.02);
 #endif
 
-                float dt_left = axis_v + axis_h;
-                float dt_right = axis_v - axis_h;
+                const float sum = fmax(fabs(axis_h_raw), fabs(axis_v_raw));
+                if (sum > 1.0) {
+                        axis_h_raw /= sum;
+                        axis_v_raw /= sum;
+                }
+
+                float dt_left = 127.0 * (axis_v_raw + axis_h_raw);
+                float dt_right = 127.0 * (axis_v_raw - axis_h_raw);
 
 
                 motor_move(motor_left_front, dt_left);
@@ -176,7 +182,7 @@ void driver_apply_lift_input() {
                 //         motor_move(motor_claw, 0);
                 // }
 
-                if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_X) && (millis() - last_claw_press) >= time_between_claw_presses) {
+                if (controller_get_digital(E_CONTROLLER_MASTER, E_CONTROLLER_DIGITAL_R1) && (millis() - last_claw_press) >= time_between_claw_presses) {
                         adi_digital_write(pneumo_claw, claw_open ? LOW : HIGH);
                         claw_open = !claw_open;
                         last_claw_press = millis();

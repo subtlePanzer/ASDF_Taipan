@@ -208,24 +208,21 @@ void autonomous() {
                 // LL P2P: Initial setup
 
                 init_claw();
-
-
-
+                toggle_claw();
 
                 struct p2p_params ip2p_params;
                 struct within_range_data lat_range_data;
                 initialise_within_range_data(&lat_range_data);
-                lat_range_data.range = 5.0f; // if within 10 mms for 100 msec  //TODO:
+                lat_range_data.range = 1.0f; // if within 10 mms for 100 msec  //TODO:
                 lat_range_data.time = 100.0f; //TODO:
 
-
                 ip2p_params.lat_exit_range_data = &lat_range_data;
-                ip2p_params.exit_range = 0; //TODO:
+                ip2p_params.exit_range = 2.0; //TODO:
 
-                ip2p_params.max_lat_speed = 1.0; //TODO:
+                ip2p_params.max_lat_speed = 0.8; //TODO:
                 ip2p_params.min_lat_speed = 0.05; //TODO:
-                ip2p_params.max_ang_speed = 1.0; //TODO:
-                ip2p_params.min_ang_speed = 0.01; //TODO:
+                ip2p_params.max_ang_speed = 0.7; //TODO:
+                ip2p_params.min_ang_speed = 0.02; //TODO:
 
                 struct pid_data lat_pid;
                 struct pid_data ang_pid;
@@ -233,38 +230,50 @@ void autonomous() {
                 initialise_pid_data(&lat_pid);
                 initialise_pid_data(&ang_pid);
 
-                lat_pid.kp = 55.0; //TODO:
+                lat_pid.kp = 4.0; //TODO:
                 lat_pid.ki = 0.0; //TODO:
-                lat_pid.kd = 5.0; //TODO:
-                lat_pid.anti_windup_range = 100.0f; //TODO:
+                lat_pid.kd = 1.5; //TODO:
+                lat_pid.anti_windup_range = 10.0f; //TODO:
 
-                ang_pid.kp = 250.0; //TODO:
+                ang_pid.kp = 1.8; //TODO:
                 ang_pid.ki = 0.0; //TODO:
-                ang_pid.kd = 5.0; //TODO:
-                ang_pid.anti_windup_range = 100.0f; //TODO:
+                ang_pid.kd = 0.5; //TODO:
+                ang_pid.anti_windup_range = 15.0f; //TODO:
 
                 ip2p_params.lat_pid = &lat_pid;
                 ip2p_params.ang_pid = &ang_pid;
 
-                ip2p_params.lat_slew = 80.0f; //TODO:
-                ip2p_params.ang_slew = 0.0f; //TODO:
+                ip2p_params.lat_slew = .5f; //TODO:
+                ip2p_params.ang_slew = .3f; //TODO:
 
-                ip2p_params.dt = 2.0f; // millis
+                ip2p_params.dt = 10.0f; // millis
 
                 struct turn_params auton_turn_params;
 
                 struct within_range_data turn_range_data;
                 initialise_within_range_data(&turn_range_data);
-                turn_range_data.range = 0.01f;
+                turn_range_data.range = 1.5f;
                 turn_range_data.time = 100.0f;
 
                 auton_turn_params.turn_exit_range_data = &turn_range_data;
-                auton_turn_params.exit_range = 0;
-                auton_turn_params.max_speed = 1.0;
-                auton_turn_params.min_speed = 0.01;
+                auton_turn_params.exit_range = 2.0;
+                auton_turn_params.max_speed = 0.7;
+                auton_turn_params.min_speed = 0.0;
 
+                struct pid_data turn_pid;
+                initialise_pid_data(&turn_pid);
+                turn_pid.kp = 3.2;
+                turn_pid.ki = 0.0;
+                turn_pid.kd = 0.4;
+                turn_pid.anti_windup_range = 20.0f;
+
+                auton_turn_params.turn_pid = &turn_pid;
+
+                auton_turn_params.slew = 0.4f;
+                auton_turn_params.dt = 10.0f;
 
                 set_motors_brake();
+                // toggle_claw();
 
                 // LL P2P: Set these per movement!
                 struct auton_command_data ip2p_command;
@@ -278,51 +287,77 @@ void autonomous() {
                 temp_c_spin_motor(motor_lift_a, -110);
                 temp_c_spin_motor(motor_lift_b, -110);
                 pros::delay(1400);
-                temp_c_spin_motor(motor_lift_a, 30);
-                temp_c_spin_motor(motor_lift_b, 30);
-                pros::delay(600);
+                temp_c_spin_motor(motor_lift_a, 100);
+                temp_c_spin_motor(motor_lift_b, 100);
+                pros::delay(1200);
                 temp_c_spin_motor(motor_lift_a, 0);
                 temp_c_spin_motor(motor_lift_b, 0);
-                pros::delay(400);
+
+                pros::delay(600);
 
                 // Toggle
                 ip2p_command.timeout_millis = 800.0f;
                 ip2p_command.reverse = true;
                 improved_point_to_point(vec2(0, -120), ip2p_command, ip2p_params);
                 ip2p_command.reverse = false;
-                improved_point_to_point(vec2(0, 300), ip2p_command, ip2p_params);
+                improved_point_to_point(vec2(0, 150), ip2p_command, ip2p_params);
                 ip2p_command.reverse = true;
                 improved_point_to_point(vec2(0, -120), ip2p_command, ip2p_params);
 
                 ip2p_command.reverse = false;
                 improved_point_to_point(vec2(0, 200), ip2p_command, ip2p_params);
 
-                // Score preload
-                ip2p_command.timeout_millis = 1000.0f;
-                // ip2p_command.target_pos = vec2(-100, 300);
-                // improved_point_to_point(ip2p_command, ip2p_params);
+
+                // // // Score preload
+                // ip2p_command.timeout_millis = 5000.0f;
+
+                // struct auton_turn_target turn_target;
+                // turn_target.as.heading = -90.0f;
+                // turn_target.is_position = false;
+                // turn_target.lock_side = LOCKED_NONE;
+                // struct auton_command_data turn_cmd;
+                // turn_cmd.reverse = false;
+                // turn_cmd.timeout_millis = 1000.0f; 
+
+                // improved_auton_turn(turn_target, turn_cmd, auton_turn_params);
+
+                // temp_c_spin_motor(motor_lift_a, -100);
+                // temp_c_spin_motor(motor_lift_b, -100);
+                // pros::delay(900);
+                // temp_c_brake_motor(motor_lift_a);
+                // temp_c_brake_motor(motor_lift_b);
+
+                // ip2p_command.timeout_millis = 1500.0f;
+                // improved_point_to_point(vec2(-280, 200), ip2p_command, ip2p_params);
+
+                // pros::delay(300);
+                // temp_c_spin_motor(motor_lift_a, 80);
+                // temp_c_spin_motor(motor_lift_b, 80);
+                // pros::delay(400);
+                // temp_c_brake_motor(motor_lift_a);
+                // temp_c_brake_motor(motor_lift_b);
+
+                // toggle_claw();
 
                 // ip2p_command.reverse = true;
-                // ip2p_command.target_pos = vec2(-100, -200);
-                // improved_point_to_point(ip2p_command, ip2p_params);
+                // improved_point_to_point(vec2(100, 200), ip2p_command, ip2p_params);
 
-                temp_c_spin_motor(motor_lift_a, -100);
-                temp_c_spin_motor(motor_lift_b, -100);
-                pros::delay(800);
-                temp_c_brake_motor(motor_lift_a);
-                temp_c_brake_motor(motor_lift_b);
+                // ip2p_command.reverse = false;
 
-                ip2p_command.reverse = false;
-                ip2p_command.timeout_millis = 1000.0f;
-                improved_point_to_point(vec2(-100, 300), ip2p_command, ip2p_params);
+                // turn_target.as.heading = 230.0f;
 
-                temp_c_spin_motor(motor_lift_a, 80);
-                temp_c_spin_motor(motor_lift_b, 80);
-                pros::delay(500);
-                temp_c_brake_motor(motor_lift_a);
-                temp_c_brake_motor(motor_lift_b);
+                // improved_auton_turn(turn_target, turn_cmd, auton_turn_params);
+                // ip2p_command.timeout_millis = 2500.0f;
+                // improved_point_to_point(vec2(-300, 600), ip2p_command, ip2p_params);
 
-                toggle_claw();
+                // toggle_claw();
+
+                // turn_target.as.heading = -45.0f;
+                // turn_target.is_position = false;
+                // turn_target.lock_side = LOCKED_NONE;
+                // turn_cmd.reverse = false;
+                // turn_cmd.timeout_millis = 1200.0f; 
+                // improved_auton_turn(turn_target, turn_cmd, auton_turn_params);
 
 #ifdef EMERGENCY
                 auton_point_to_point(vec2(0, 150), false);
@@ -358,180 +393,89 @@ void autonomous() {
 
 
 
-                // #ifdef NO 
-                //                 printf("Running temporary auton\n");
-                //                 pros::screen::print(pros::E_TEXT_MEDIUM, 1, "RUNNING TEMPORARY AUTON");
 
-                //                 temp_spin_dt(65, 65);
-                //                 temp_c_spin_motor(motor_claw, 100);
-                //                 pros::delay(200);
 
-                //                 temp_spin_dt(-60, -60);
-                //                 pros::delay(300);
-                //                 temp_spin_dt(10, 10);
-                //                 pros::delay(50);
-                //                 temp_spin_dt(0, 0);
+// #ifndef short_auto
+//                 temp_spin_dt(80, 30);
+// #else
+//                 temp_spin_dt(0, 100);
+// #endif
+//                 pros::delay(850);
+//                 temp_spin_dt(60, 60);
+//                 pros::delay(800);
+//                 temp_spin_dt(0, 0);
+//                 temp_c_spin_motor(motor_lift_a, 60);
+//                 temp_c_spin_motor(motor_lift_b, 60);
+//                 pros::delay(1100);
+//                 temp_c_spin_motor(motor_lift_a, 0);
+//                 temp_c_spin_motor(motor_lift_b, 0);
+//                 temp_spin_dt(-100, -100);
+//                 pros::delay(50);
+//                 temp_spin_dt(0, 0);
+//                 toggle_claw();
 
-                //                 temp_c_spin_motor(motor_lift_a, -100);
-                //                 temp_c_spin_motor(motor_lift_b, -100);
-                //                 pros::delay(1200);
-                //                 temp_c_spin_motor(motor_lift_a, 100);
-                //                 temp_c_spin_motor(motor_lift_b, 100);
 
-                //                 pros::delay(800);
-                //                 temp_spin_dt(0, 0);
-                //                 temp_spin_dt(20, 20);
-                //                 pros::delay(300);
-                //                 temp_spin_dt(0, 0);
-                //                 temp_c_spin_motor(motor_lift_a, -100);
-                //                 temp_c_spin_motor(motor_lift_b, -100);
-                //                 temp_spin_dt(-30, -30);
-                //                 pros::delay(300);
-                //                 temp_spin_dt(0, 0);
+//                 pros::delay(500);
+//                 temp_spin_dt(-100, -100);
+//                 pros::delay(500);
+//                 temp_spin_dt(0, 0);
+// #ifndef short_auto
+//                 temp_spin_dt(-100, 100);
+//                 // turn towards pin+cup stack
+//                 pros::delay(250);
+//                 temp_spin_dt(60, 60);
+//                 pros::delay(1400);
+//                 temp_spin_dt(40, 40);
+//                 pros::delay(250);
+//                 temp_spin_dt(0, 0);
+//                 toggle_claw();
+//                 pros::delay(200);
+//                 temp_c_spin_motor(motor_lift_a, -100);
+//                 temp_c_spin_motor(motor_lift_b, -100);
+//                 temp_spin_dt(100, 100);
+//                 pros::delay(80);
+//                 // pros::delay(300);
+//                 temp_spin_dt(100, -100);
+//                 pros::delay(650);
+//                 temp_spin_dt(100, 100);
 
-                //                 pros::delay(1200);
-                //                 temp_c_spin_motor(motor_lift_a, 100);
-                //                 temp_c_spin_motor(motor_lift_b, 100);
-                //                 pros::delay(800);
-                //                 temp_c_spin_motor(motor_lift_a, 0);
-                //                 temp_c_spin_motor(motor_lift_b, 0);
-                //                 temp_spin_dt(60, 60);
-                //                 pros::delay(300);
-                //                 temp_c_spin_motor(motor_lift_a, -80);
-                //                 temp_c_spin_motor(motor_lift_b, -80);
-                //                 temp_spin_dt(0, 100);
-                //                 pros::delay(850);
-                //                 temp_spin_dt(60, 60);
-                //                 pros::delay(800);
-                //                 temp_spin_dt(0, 0);
-                //                 temp_c_spin_motor(motor_lift_a, 60);
-                //                 temp_c_spin_motor(motor_lift_b, 60);
-                //                 pros::delay(2000);
-                //                 temp_c_spin_motor(motor_lift_a, 0);
-                //                 temp_c_spin_motor(motor_lift_b, 0);
-                //                 temp_c_spin_motor(motor_claw, -100);
-                //                 pros::delay(300);
-                //                 temp_c_spin_motor(motor_claw, 0);
-                //                 temp_spin_dt(-100, -100);
-                //                 // pros::delay(300);
-                //                 // temp_spin_dt(0, -100);
-                //                 // pros::delay(850);
-                //                 // temp_spin_dt(100, 100);
-                //                 // pros::delay(800);
-                //                 // temp_spin_dt(0, 0);
-                // #endif
-                //                 temp_spin_dt(65, 65);
-                //                 temp_c_spin_motor(motor_claw, 100);
-                //                 pros::delay(200);
+//                 pros::delay(1100);
+//                 temp_spin_dt(0, 0);
+//                 temp_c_spin_motor(motor_lift_a, 60);
+//                 temp_c_spin_motor(motor_lift_b, 60);
+//                 pros::delay(1300);
+//                 toggle_claw();
+//                 pros::delay(200);
+// #endif
+// #ifdef SKILLS
+//                 temp_spin_dt(-100, -100);
+//                 pros::delay(200);
+//                 temp_spin_dt(-100, 100);
+//                 pros::delay(700);
+//                 temp_spin_dt(100, 100);
+//                 pros::delay(1000);
+// #endif
 
-                //                 temp_spin_dt(-60, -60);
-                //                 pros::delay(300);
-                //                 temp_spin_dt(10, 10);
-                //                 pros::delay(50);
-                //                 temp_spin_dt(0, 0);
+                // temp_c_spin_motor(motor_lift_a, 60);
+                // temp_c_spin_motor(motor_lift_b, 60);
+                // pros::delay(1000);
+                // temp_spin_dt(120, 120);
+                // pros::delay(200);
+                // temp_spin_dt(100, -100);
+                // pros::delay(500);
+                // temp_spin_dt(100, 100);
+                // pros::delay(500);
+                // temp_spin_dt(0, 0);
 
-                //                 temp_c_spin_motor(motor_lift_a, -100);
-                //                 temp_c_spin_motor(motor_lift_b, -100);
-                //                 pros::delay(1200);
-                //                 temp_c_spin_motor(motor_lift_a, 100);
-                //                 temp_c_spin_motor(motor_lift_b, 100);
 
-                //                 pros::delay(800);
-                //                 temp_spin_dt(0, 0);
-                //                 temp_spin_dt(20, 20);
-                //                 pros::delay(300);
-                //                 temp_spin_dt(0, 0);
-                //                 temp_c_spin_motor(motor_lift_a, -100);
-                //                 temp_c_spin_motor(motor_lift_b, -100);
-                //                 temp_spin_dt(-30, -30);
-                //                 pros::delay(300);
-                //                 temp_spin_dt(0, 0);
 
-                //                 pros::delay(1200);
-                //                 temp_c_spin_motor(motor_lift_a, 100);
-                //                 temp_c_spin_motor(motor_lift_b, 100);
-                //                 pros::delay(800);
-                //                 temp_c_spin_motor(motor_lift_a, 0);
-                //                 temp_c_spin_motor(motor_lift_b, 0);
-                //                 temp_spin_dt(60, 60);
-                //                 pros::delay(300);
-                //                 temp_c_spin_motor(motor_lift_a, -80);
-                //                 temp_c_spin_motor(motor_lift_b, -80);
-                // #ifndef short_auto
-                //                 temp_spin_dt(100, 0);
-                // #else
-                //                 temp_spin_dt(0, 100);
-                // #endif
-                //                 pros::delay(850);
-                //                 temp_spin_dt(60, 60);
-                //                 pros::delay(800);
-                //                 temp_spin_dt(0, 0);
-                //                 temp_c_spin_motor(motor_lift_a, 60);
-                //                 temp_c_spin_motor(motor_lift_b, 60);
-                //                 pros::delay(1100);
-                //                 temp_c_spin_motor(motor_lift_a, 0);
-                //                 temp_c_spin_motor(motor_lift_b, 0);
-                //                 temp_spin_dt(-100, -100);
-                //                 pros::delay(50);
-                //                 temp_spin_dt(0, 0);
-                //                 temp_c_spin_motor(motor_claw, -100);
-                //                 pros::delay(500);
-                //                 temp_spin_dt(-100, -100);
-                //                 pros::delay(500);
-                // #ifndef short_auto
-                //                 temp_spin_dt(-100, 100);
-                //                 // turn towards pin+cup stack
-                //                 pros::delay(250);
-                //                 temp_spin_dt(60, 60);
-                //                 pros::delay(1400);
-                //                 temp_spin_dt(40, 40);
-                //                 pros::delay(250);
-                //                 temp_spin_dt(0, 0);
-                //                 temp_c_spin_motor(motor_claw, 100);
-                //                 pros::delay(200);
-                //                 temp_c_spin_motor(motor_lift_a, -100);
-                //                 temp_c_spin_motor(motor_lift_b, -100);
-                //                 temp_spin_dt(100, 100);
-                //                 pros::delay(80);
-                //                 // pros::delay(300);
-                //                 temp_spin_dt(100, -100);
-                //                 pros::delay(650);
-                //                 temp_spin_dt(100, 100);
-
-                //                 pros::delay(1100);
-                //                 temp_spin_dt(0, 0);
-                //                 temp_c_spin_motor(motor_lift_a, 60);
-                //                 temp_c_spin_motor(motor_lift_b, 60);
-                //                 pros::delay(1300);
-                //                 temp_c_spin_motor(motor_claw, -100);
-                //                 pros::delay(200);
-                // #endif
-                // #ifdef SKILLS
-                //                 temp_spin_dt(-100, -100);
-                //                 pros::delay(200);
-                //                 temp_spin_dt(-100, 100);
-                //                 pros::delay(700);
-                //                 temp_spin_dt(100, 100);
-                //                 pros::delay(1000);
-                // #endif
-
-                //                 // temp_c_spin_motor(motor_lift_a, 60);
-                //                 // temp_c_spin_motor(motor_lift_b, 60);
-                //                 // pros::delay(1000);
-                //                 // temp_spin_dt(120, 120);
-                //                 // pros::delay(200);
-                //                 // temp_spin_dt(100, -100);
-                //                 // pros::delay(500);
-                //                 // temp_spin_dt(100, 100);
-                //                 // pros::delay(500);
-                //                 // temp_spin_dt(0, 0);
                 // #ifdef USE_TAIPAN
-                //         }
+//         }
 
-                //         printf("Freeing VM...");
-                //         free_VM();
-                //         printf("VM freed.\n");
-                // #endif
+//         printf("Freeing VM...");
+//         free_VM();
+//         printf("VM freed.\n");
+// #endif
 
 }
 

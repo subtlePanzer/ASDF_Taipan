@@ -48,10 +48,10 @@ typedef enum {
 } dt_motors;
 
 typedef enum {
-        motor_left_front = -12,
+        motor_left_front = 12,
         motor_left_rear = -13,
 
-        motor_right_front = 29,
+        motor_right_front = -19,
         motor_right_rear = 18,
 
         motor_lift_a = 2, // right

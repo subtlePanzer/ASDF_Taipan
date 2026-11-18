@@ -20,6 +20,9 @@ void set_motors_brake() {
 
         motor_set_brake_mode(motor_right_front, E_MOTOR_BRAKE_BRAKE);
         motor_set_brake_mode(motor_right_rear, E_MOTOR_BRAKE_BRAKE);
+
+        motor_set_brake_mode(motor_lift_a, E_MOTOR_BRAKE_BRAKE);
+        motor_set_brake_mode(motor_lift_b, E_MOTOR_BRAKE_BRAKE);
 }
 
 void unset_motors_brake() {
@@ -37,7 +40,7 @@ void unset_motors_brake() {
         \
                 motor_move(motor_right_front, (power_r)); \
                 motor_move(motor_right_rear, (power_r)); \
-        } while (0);
+        } while (0)
 
 #define BRAKE_DT_MOTORS() \
         do { \
@@ -142,7 +145,7 @@ static float directional_slew(float target, float curr, float max_delta, float d
 }
 
 static float slew(float target, float curr, float max_delta, float dt) {
-        directional_slew(target, curr, max_delta, dt, SLEW_NONE);
+        return directional_slew(target, curr, max_delta, dt, SLEW_NONE);
 }
 
 struct out_data
@@ -310,7 +313,7 @@ void improved_auton_turn(struct auton_turn_target target, struct auton_command_d
 
                 if (params.min_speed != 0)
                         if (fabs(dtheta) < params.exit_range) break;
-                        else if (sgn(dtheta) != sgn(prev_dtheta)) break;
+                        else if (has_prev_dtheta && (dtheta) != sgn(prev_dtheta)) break;
 
                 prev_dtheta = dtheta;
                 has_prev_dtheta = true;
@@ -319,7 +322,10 @@ void improved_auton_turn(struct auton_turn_target target, struct auton_command_d
 
                 prev_motor_power = motor_power;
 
-                SPIN_DT_MOTORS(-motor_power, motor_power);
+                screen_print(E_TEXT_MEDIUM, 3, "Moving with {%.3f} dtheta", dtheta);
+                screen_print(E_TEXT_MEDIUM, 4, "Power: {%.3f}, {%.3f}", -motor_power, motor_power);
+
+                SPIN_DT_MOTORS(127.0f * -motor_power, 127.0f * motor_power);
                 if (target.lock_side) {
                         if (target.lock_side == LOCKED_LEFT) {
                                 motor_brake(dt_left_front);
@@ -381,11 +387,11 @@ void improved_point_to_point(vec2 target_pos, struct auton_command_data cmd, str
 
                 const float dist_to_target = get_mag(delta);
 
-                if (!is_close && dist_to_target < 20.0f) {
+                if (!is_close && dist_to_target < 10.0f) {
                         is_close = true;
 
-                        params.max_lat_speed = fmax(fabs(prev_lat_out), 4.7);
-                        params.max_ang_speed = fmax(fabs(prev_ang_out), 4.7);
+                        params.max_lat_speed = fmax(fabs(prev_lat_out), .2f);
+                        params.max_ang_speed = fmax(fabs(prev_ang_out), .2f);
                 }
 
                 float h = atomic_load(&heading);
@@ -454,7 +460,7 @@ static vec2 cartesian_from_polar(float mag, float argd) {
 static vec2 get_carrot_point(bool is_close, vec2 target, float heading, float lead, float dist) {
         if (is_close) return target;
         vec2 out;
-        vec2 lead_point = cartesian_from_polar(heading, lead * dist);
+        vec2 lead_point = cartesian_from_polar(lead * dist, heading);
 
         out.x = target.x - lead_point.x;
         out.y = target.y - lead_point.y;
@@ -469,10 +475,12 @@ static struct auton_turn_target mutate_heading_pos_to_true_heading(vec2 ref_pos,
 
         target_point.as.heading = ANGLE_TO(delta);
         target_point.is_position = false;
+
+        return target_point;
 }
 
 static float get_p2p_turn_lat_err(float dist, float heading, float angle, bool is_close) {
-        const float factor = cos(get_angle_err(heading, angle, TURN_NONE));
+        const float factor = cos(IN_RAD(get_angle_err(heading, angle, TURN_NONE)));
         if (is_close) dist *= factor; // dist is a local closure on the argument passed, it's safe to mutate
         else dist *= sgn(factor);
         return dist;
@@ -496,11 +504,11 @@ static inline float get_signed_tan_arc_curve(vec2 start, float start_head, vec2 
         delta.x = end.x - start.x;
         delta.y = end.y - start.y;
 
-        const float side = sgn(sin(IN_RAD(start_head)) * delta.x - cos(IN_RAD(start_head) * delta.y));
+        const float side = sgn(sin(IN_RAD(start_head)) * delta.x - cos(IN_RAD(start_head)) * delta.y);
 
         const float a = -tan(IN_RAD(start_head));
         const float c = tan(IN_RAD(start_head)) * start.x - start.y;
-        const float x = abs(a * end.x + end.y + c) / sqrt(a * a + 1);
+        const float x = fabs(a * end.x + end.y + c) / sqrt(a * a + 1);
         const float d = get_mag(delta);
 
         return side * ((2.0f * x) / (d * d));
@@ -511,7 +519,7 @@ static inline float get_signed_tan_arc_curve(vec2 start, float start_head, vec2 
 static float p2p_turn_get_lat_out(float lat_err, const float ang_out, struct p2p_turn_params params, bool is_close, float* prev_lat_out, vec2 pos, vec2 carrot_point, bool do_reverse) {
         float out = pid_data_update(params.lat_pid, lat_err);
         out = clamp(out, -params.max_lat_speed, params.max_lat_speed);
-        if (!close) out = slew(out, *prev_lat_out, params.lat_slew, params.dt);
+        if (!is_close) out = slew(out, *prev_lat_out, params.lat_slew, params.dt);
 
         // antislip
         const float radi = 1 / fabs(get_signed_tan_arc_curve(pos, atomic_load(&heading), carrot_point));
@@ -524,8 +532,8 @@ static float p2p_turn_get_lat_out(float lat_err, const float ang_out, struct p2p
         if (!is_close)
                 out = do_reverse ? fmin(out, 0) : fmax(out, 0);
 
-        if (do_reverse && -out < fabs(params.min_lat_speed) && out < 0) out = -abs(params.min_lat_speed);
-        if (!do_reverse && out < fabs(params.min_lat_speed) && out > 0) out = abs(params.min_lat_speed);
+        if (do_reverse && -out < fabs(params.min_lat_speed) && out < 0) out = -fabs(params.min_lat_speed);
+        if (!do_reverse && out < fabs(params.min_lat_speed) && out > 0) out = fabs(params.min_lat_speed);
 
         *prev_lat_out = out;
         return out;
@@ -617,7 +625,10 @@ void improved_pint_to_point_plus_heading(vec2 target_pos, struct auton_turn_targ
                 const float lat_out = p2p_turn_get_lat_out(lat_error, ang_out, params, is_close, &prev_lat_out, pos, carrot_point, cmd.reverse);
 
                 const vec2 out = desaturate_power(lat_out, ang_out);
-                SPIN_DT_MOTORS(out.x, out.y);
+
+                SPIN_DT_MOTORS(127.0f * out.x, 127.0f * out.y);
+
+                delay(params.dt);
         }
 
         BRAKE_DT_MOTORS();
